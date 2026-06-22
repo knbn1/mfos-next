@@ -66,6 +66,8 @@ if not exist "%toggles%\noclear" (cls)
 if not exist "%toggles%\nolog" (set "logfile=%mfosLocation%mfos-log.txt") else (set "logfile=NUL")
 if not exist "%toggles%\incognito" (set "history=%userDir%/mfos-history.txt") else (set "history=NUL")
 
+set "dirWriteable=nope"
+
 :: Start logging
 
 echo. >>"%logfile%"
@@ -391,7 +393,7 @@ goto prompt
 :: Consolidations
 
 ::Syntax: %1=directory, %2=recursive(bool[yessir]) | %3=var:return(bool)
-:dirWriteable
+:checkWriteable
 set "%3=yessir"
 
 type nul > "%~f1\writeCheck.tmp"
@@ -401,10 +403,10 @@ if not exist "%~f1\writeCheck.tmp" (
 
 if "%2"=="nope" (goto :eof)
 
-call :dirW_recurse "%~1" %3
+call :checkWrite_recurse "%~1" %3
 goto :eof
 
-:dirW_recurse
+:checkWrite_recurse
 for /d /r "%~1" %%D in (*) do (
     type nul > "%%~fD\writeCheck.tmp"
     if not exist "%%~fD\writeCheck.tmp" (

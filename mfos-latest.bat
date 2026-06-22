@@ -390,6 +390,31 @@ goto prompt
 
 :: Consolidations
 
+::Syntax: %1=directory, %2=recursive(bool[yessir]) | %3=var:return(bool)
+:dirWriteable
+set "%3=yessir"
+
+type nul > "%~f1\writeCheck.tmp"
+if not exist "%~f1\writeCheck.tmp" (
+    set "%3=nope"
+) else (del "%~f1\writeCheck.tmp")
+
+if "%2"=="nope" (goto :eof)
+
+call :dirW_recurse "%~1" %3
+goto :eof
+
+:dirW_recurse
+for /d /r "%~1" %%D in (*) do (
+    type nul > "%%~fD\writeCheck.tmp"
+    if not exist "%%~fD\writeCheck.tmp" (
+        set "%2=nope"
+        goto :eof
+    )
+    del "%%~fD\writeCheck.tmp"
+)
+goto :eof
+
 :devinitok
 echo Initialized %1
 echo [kdevinit] INFO: %1 initialized >>"%logfile%"

@@ -66,7 +66,8 @@ if not exist "%toggles%\noclear" (cls)
 if not exist "%toggles%\nolog" (set "logfile=%mfosLocation%mfos-log.txt") else (set "logfile=NUL")
 if not exist "%toggles%\incognito" (set "history=%userDir%/mfos-history.txt") else (set "history=NUL")
 
-set "dirWriteable=nope"
+call :checkWriteable "%CD%" yessir dirWriteable
+if "%dirWriteable%"=="nope" (call :writeCheckFail boot)
 
 :: Start logging
 
@@ -437,6 +438,12 @@ echo.
 echo FAIL %1
 echo [kmodsinit] ERROR: failed to load %1 >>"%logfile%"
 goto bootfail
+
+:writeCheckFail
+echo.
+echo Current directory and/or subdirectories are read-only
+if "%1"=="boot" (goto bootfail)
+goto :eof
 
 :bootfail
 echo.

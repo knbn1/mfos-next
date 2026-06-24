@@ -14,10 +14,16 @@ if "%1"=="install" (
         echo [neopkg] ERROR: package directories not found >>"%logfile%"
         goto :eof
     )
+    if "%dirWritable%"=="nope" (
+        echo Package cannot be installed in read-only mode!
+        echo [neopkg] ERROR: Cannot install package in read-only mode >>%logfile%
+        goto :eof
+    )
+
     set "curlfound="
     call :curlcheck
     if "%curlfound%"=="nope" (
-        set "curlfound='
+        set "curlfound="
         goto :eof
     )
     setlocal enabledelayedexpansion
@@ -66,6 +72,12 @@ if "%1"=="uninstall" (
         echo [neopkg] ERROR: package not installed >>"%logfile%"
         goto :eof
     )
+    if "%dirWritable%"=="nope" (
+        echo Cannot uninstall package in read-only mode!
+        echo [neopkg] ERROR: package cannot be uninstalled in read-only mode >>%logfile%
+        goto :eof
+    )
+
     echo Uninstalling package...
     del "%pkgDir%\%2.mfp" /f /q
     echo.
@@ -142,12 +154,18 @@ if "%1"=="run" (
     goto :eof
 )
 
-if "%1"=="clear-cache"
+if "%1"=="clear-cache" (
     if not exist "%pkgDir%" if not exist "%pkgMeta%" if not exist "%exeCache%" (
         echo Package directories not found!
         echo [neopkg] ERROR: package directories not found >>"%logfile%"
         goto :eof
     )
+    if "%dirWritable%"=="nope" (
+        echo Cannot clear cache in read-only mode!
+        echo [neopkg] ERROR: Neopkg exec cache cannot be cleared in read-only mode >>%logfile%
+        goto :eof
+    )
+
     call :proctector
     if "%authorized%" NEQ "true" (
         goto :eof
@@ -164,10 +182,16 @@ if "%1"=="available" (
         echo [neopkg] ERROR: package directories not found >>"%logfile%"
         goto :eof
     )
+    if "%dirWritable%"=="nope" (
+        echo Package list cannot be downloaded in read-only mode!
+        echo [neopkg] ERROR: Cannot get package list in read-only mode >>%logfile%
+        goto :eof
+    )
+
     set "curlfound="
     call :curlcheck
     if "%curlfound%"=="nope" (
-        set "curlfound='
+        set "curlfound="
         goto :eof
     )
     setlocal enabledelayedexpansion

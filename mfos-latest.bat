@@ -49,6 +49,8 @@ set "pkgDir=%userSysDatadir%\packages"
 set "pkgMeta=%pkgDir%\installed"
 set "pkgHelp=%disk0p1%\help"
 
+set "excludeWriteCheck=.git"
+
 :: Modules loaded as part of the boot process
 
 set "sysModDeps=cmd core fsutils compact proctector neopkg devtools userspace"
@@ -66,8 +68,11 @@ if not exist "%toggles%\noclear" (cls)
 if not exist "%toggles%\nolog" (set "logfile=%mfosLocation%mfos-log.txt") else (set "logfile=NUL")
 if not exist "%toggles%\incognito" (set "history=%userDir%/mfos-history.txt") else (set "history=NUL")
 
-call :checkWriteable "%CD%" yessir dirWriteable
-if "%dirWriteable%"=="nope" (call :writeCheckFail boot)
+:: Flag directory writability
+
+call :checkWritable "%~dp0" "%excludeWriteCheck%" 0 
+if ERRORLEVEL 1 (call :writeCheckFail boot)
+set "dirWritable=yessir"
 
 :: Start logging
 
@@ -393,29 +398,41 @@ goto prompt
 
 :: Consolidations
 
-::Syntax: %1=directory, %2=recursive(bool[yessir]) | %3=var:return(bool)
-:checkWriteable
-set "%3=yessir"
+::%1=dir, %2=excludeDirs, %3=depthCount || %4=tmpFilename
+::ERRORLEVELs: 10=read-only, 3=depth exceeded, 2=skipped
+:checkWritable
+if "%~1"=="" (exit /b 0)
 
-type nul > "%~f1\writeCheck.tmp"
-if not exist "%~f1\writeCheck.tmp" (
-    set "%3=nope"
-) else (del "%~f1\writeCheck.tmp")
+set /a "recurseLimit=100"
+if %3 GEQ %recurseLimit% (exit /b 3)
+set /a "depth=%3 +1"
 
-if "%2"=="nope" (goto :eof)
+call :ItemInSet "%~nx1" "%~2" exclThis
+if "%exclThis%"=="yessir" (exit /b 2)
 
-call :checkWrite_recurse "%~1" %3
-goto :eof
+rem Current level check
+type nul > "%~f1\%4.tmp"
+if not exist "%~f1\%4.tmp" (exit /b 10)
+del "%~f1\%4.tmp"
 
-:checkWrite_recurse
-for /d /r "%~1" %%D in (*) do (
-    type nul > "%%~fD\writeCheck.tmp"
-    if not exist "%%~fD\writeCheck.tmp" (
-        set "%2=nope"
+rem Check subdirectories
+for /d %%Z in ("%~f1\*") do (
+    call :checkWritable "%%~fZ" "%~2" %depth%
+    if ERRORLEVEL 10 (exit /b 10)
+)
+
+set "depth=" & set "exclThis="
+exit /b
+
+::%1=itemCompare, %2=set(space-delimited, quoted) | %3=var:return(bool)
+:ItemInSet
+for %%Y in (%~2) do (
+    if "%~1"=="%%Y" (
+        set "%3=yessir"
         goto :eof
     )
-    del "%%~fD\writeCheck.tmp"
 )
+set "%3=nope"
 goto :eof
 
 :devinitok

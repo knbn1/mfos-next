@@ -99,7 +99,7 @@ if "%1"=="list" (
     echo echoon: Disables echo OFF so command that generated shell output is shown
     echo noclear: Disables clearing shell output (this also affects the "clear" command)
     echo nolog: Disables system logging functions within MicroflashOS
-    echo noAutoWriteRecheck: Disables automatic reflagging of directory writability
+    echo noReadOnly: Exit upon detecting the new directory contains read-only directories
     goto :eof
 )
 echo Invalid arguments!

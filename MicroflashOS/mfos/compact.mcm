@@ -39,7 +39,7 @@ goto :eof
 
 :pauseexit
 call :halt
-exit
+cmd /k exit
 
 :halt
 echo.

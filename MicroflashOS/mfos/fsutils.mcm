@@ -1,7 +1,7 @@
 :: MicroflashOS Filesystem Toolkit [fsutils.mcm]
 
 :mkdir
-if "%1"=="" (
+if "%~1"=="" (
     echo This command is used to make a directory.
     echo.
     echo Usage:
@@ -10,23 +10,23 @@ if "%1"=="" (
     echo [fsutils] ERROR: no directory provided >>"%logfile%"
     goto :eof
 )
-if exist "%1/" (
-    echo Directory "%1" already exists!
-    echo [fsutils] ERROR: directory "%1" already exists >>"%logfile%"
+if "%dirWritable%"=="nope" (
+    echo Read-only: Failed to create directory "%~1"!
+    echo [fsutils] ERROR: (read-only) failed to create directory "%~1" >>"%logfile%"
     goto :eof
 )
-mkdir "%1"
-if not exist "%1/" (
-    echo Failed to create directory "%1"!
-    echo [fsutils] ERROR: failed to create directory "%1" >>"%logfile%"
+if exist "%~1" (
+    echo Directory "%~1" already exists!
+    echo [fsutils] ERROR: directory "%~1" already exists >>"%logfile%"
     goto :eof
 )
-echo Created directory "%1"
-echo [fsutils] INFO: created directory "%1" >>"%logfile%"
+mkdir "%~1"
+echo Created directory "%~1"
+echo [fsutils] INFO: created directory "%~1" >>"%logfile%"
 goto :eof
 
 :rename
-if "%1"=="" (
+if "%~1"=="" (
     echo This command renames a file or a folder.
     echo.
     echo Usage:
@@ -35,28 +35,28 @@ if "%1"=="" (
     echo [fsutils] ERROR: no option selected >>"%logfile%"
     goto :eof
 )
-if not exist "%1" (
+if "%dirWritable%"=="nope" (
+    echo Read-only: Failed to rename "%~1"!
+    echo [fsutils] ERROR: (Read-only) failed to rename "%~1" >>"%logfile%"
+    goto :eof
+)
+if not exist "%~1" (
     echo Target does not exist!
-    echo [fsutils] ERROR: target "%1" does not exist >>"%logfile%"
+    echo [fsutils] ERROR: target "%~1" does not exist >>"%logfile%"
     goto :eof
 )
-if exist "%2" (
+if exist "%~2" (
     echo An object with the same name is already present!
-    echo [fsutils] ERROR: new name "%2" matches an existing name >>"%logfile%"
+    echo [fsutils] ERROR: new name "%~2" matches an existing name >>"%logfile%"
     goto :eof
 )
-ren "%1" "%2"
-if not exist "%2" (
-    echo Failed to rename "%1"!
-    echo [fsutils] ERROR: failed to rename "%1" >>"%logfile%"
-    goto :eof
-)
-echo Renamed "%1" to "%2"
-echo [fsutils] INFO: renamed "%1" to "%2" >>"%logfile%"
+ren "%~1" "%~2"
+echo Renamed "%~1" to "%~2"
+echo [fsutils] INFO: renamed "%~1" to "%~2" >>"%logfile%"
 goto :eof
 
 :delete
-if "%1"=="" (
+if "%~1"=="" (
     echo This command deletes something.
     echo.
     echo Usage:
@@ -65,40 +65,34 @@ if "%1"=="" (
     echo [fsutils] ERROR: no option selected >>"%logfile%"
     goto :eof
 )
-if "%1"=="file" (
-    if not exist "%2" (
-        echo File does not exist!
-        echo [fsutils] ERROR: specified file "%2" does not exist >>"%logfile%"
-        goto :eof
-    )
-    del "%2" /f /q
-    if not exist "%2" (
-        echo Deleted file "%2"
-        echo [fsutils] INFO: deleted file "%2" >>"%logfile%"
-        goto :eof
-    )
-    echo Failed to delete file!
-    echo [fsutils] ERROR: failed to delete file "%2" >>"%logfile%"
+if /I "%~1"=="file" (
+    set "targetType=file"
+    set "typeUpper=File"
+    set "typeCmd=del ^"%~2^" /f /q"
+) else if /I "%~1"=="directory" (
+    set "targetType=directory"
+    set "typeUpper=Directory"
+    set "typeCmd=del ^"%~2^" /s /q"
+) else (
+    echo Invalid arguments.
+    echo [fsutils] ERROR: invalid arguments >>"%logfile%"
     goto :eof
 )
-if "%1"=="directory" (
-    if not exist "%2" (
-        echo Directory does not exist!
-        echo [fsutils] ERROR: specified directory "%2" does not exist >>"%logfile%"
-        goto :eof
-    )
-    rd "%2" /s /q
-    if not exist "%2/" (
-        echo Deleted directory "%2"
-        echo [fsutils] INFO: deleted directory "%2" >>"%logfile%"
-        goto :eof
-    )
-    echo Failed to delete directory!
-    echo [fsutils] ERROR: failed to delete directory "%1" >>"%logfile%"
+
+if "%dirWritable%"=="nope" (
+    echo Read-only: Failed to delete %targetType%!
+    echo [fsutils] (Read-only) ERROR: failed to delete %targetType% "%~2" >>"%logfile%"
     goto :eof
 )
-echo Invalid arguments.
-echo [fsutils] ERROR: invalid arguments >>"%logfile%"
+if not exist "%~2" (
+    echo %typeUpper% does not exist!
+    echo [fsutils] ERROR: specified %targetType% "%~2" does not exist >>"%logfile%"
+    goto :eof
+)
+
+%typeCmd%
+echo Deleted %targetType% "%~2"
+echo [fsutils] INFO: deleted %targetType% "%~2" >>"%logfile%"
 goto :eof
 
 :list
@@ -113,8 +107,8 @@ dir /a:-d /b
 goto :eof
 
 :cd
-if "%1"=="" (
-    echo This command is used to enter a directory or change your current directory.
+if "%~1"=="" (
+    echo This command is used change your current directory.
     echo.
     echo Usage:
     echo.
@@ -122,14 +116,27 @@ if "%1"=="" (
     echo [fsutils] ERROR: no path provided >>"%logfile%"
     goto :eof
 )
-if not exist "%1/" (
+if not exist "%~1" (
     echo Directory invalid!
     echo [fsutils] ERROR: invalid path >>"%logfile%"
     goto :eof
 )
-cd "%1"
-echo Changed directory to "%1"
-echo [fsutils] INFO: changed directory to "%1" >>"%logfile%"
+
+call :checkWritable "%~1" "%excludeWriteCheck%" 0
+if ERRORLEVEL 10 (
+    echo WARNING: Target contains read-only directories!
+    echo [fsutils] WARN: Target "%~1" contains read-only directories >>"%logfile%"
+    if exist "%toggles%\noReadOnly" (cmd /k exit)
+
+    echo Switching to read-only mode...
+    echo.
+    echo WARNING: You are now in read-only mode.
+    echo [fsutils] WARN: Read-only mode enabled >>"%logfile%"
+    set "dirWritable=nope"
+) else (set "dirWritable=yessir")
+cd "%~1"
+echo Changed directory to "%~1"
+echo [fsutils] INFO: changed directory to "%~1" >>"%logfile%"
 echo [fsutils] DEBUG: current path is "%cd%" >>"%logfile%"
 goto :eof
 
@@ -140,6 +147,13 @@ if not exist "%userDir%" (
     echo [fsutils] ERROR: could not find userdata for current user >>"%logfile%"
     goto :eof
 )
+call :checkWritable "%userDir%" "%excludeWriteCheck%" 0
+if ERRORLEVEL 10 (
+    echo Home directory contains read-only subdirectories!
+    echo [fsutils] ERROR: Home directory "%userDir%" contains read-only subdirectories >>"%logfile%"
+    goto :eof
+)
+
 cd /d "%userDir%"
 echo Welcome home.
 echo [fsutils] INFO: reverted current path to home directory >>"%logfile%"

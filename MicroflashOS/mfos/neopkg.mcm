@@ -2,218 +2,9 @@
 :: Some code borrowed from the MicroflashOS Updater by nightlydevice and nglammm
 
 :neopkg
-
-if "%1"=="install" (
-    if "%2"=="" (
-        echo Input a package name.
-        echo [neopkg] ERROR: package name empty! >>"%logfile%"
-        goto :eof
-    )
-    if not exist "%pkgDir%" if not exist "%pkgMeta%" if not exist "%exeCache%" (
-        echo Package directories not found!
-        echo [neopkg] ERROR: package directories not found >>"%logfile%"
-        goto :eof
-    )
-    if "%dirWritable%"=="nope" (
-        echo Package cannot be installed in read-only mode!
-        echo [neopkg] ERROR: Cannot install package in read-only mode >>%logfile%
-        goto :eof
-    )
-
-    set "curlfound="
-    call :curlcheck
-    if "%curlfound%"=="nope" (
-        set "curlfound="
-        goto :eof
-    )
-    setlocal enabledelayedexpansion
-    set "pkgLink=https://raw.githubusercontent.com/knbn1/mfos-next-packages/refs/heads/main/%2.mfp"
-    set "pkgFile=%pkgDir%\%2.mfp"
-    set "curlErr=%pkgDir%\curl-error.txt"
-    echo Downloading package %2
-    echo [neopkg] INFO: downloading package %2 from !pkgLink! >>"%logfile%"
-    echo.
-    curl --show-error --fail --silent --output "!pkgFile!" "!pkgLink!" 2>"!curlErr!"
-    set /p curlout=<"!curlErr!"
-    if "!curlout!"=="" (
-        echo [neopkg] INFO: downloaded %2 successfully >>"%logfile%"
-        echo Registering package...
-        echo.
-        echo Package name: "%2" >"%pkgMeta%\%2"
-        echo Install link: !pkgLink! >>"%pkgMeta%\%2"
-        echo Install date: %time% %date% >>"%pkgMeta%\%2"
-        echo [neopkg] INFO: generated package metadata file >>"%logfile%"
-        echo Installed package %2
-        del /f /q "!curlErr!"
-        goto :eof
-    ) else (
-        echo Failed to download package.
-        echo.
-        echo !curlout!
-        echo [neopkg] ERROR: curl failed: "!curlout!" >>"%logfile%"
-        del /f /q "!curlErr!"
-        goto :eof
-    )
-)
-
-if "%1"=="uninstall" (
-    if "%2"=="" (
-        echo Input a package name.
-        echo [neopkg] ERROR: package name empty! >>"%logfile%"
-        goto :eof
-    )
-    if not exist "%pkgDir%" if not exist "%pkgMeta%" if not exist "%exeCache%" (
-        echo Package directories not found!
-        echo [neopkg] ERROR: package directories not found >>"%logfile%"
-        goto :eof
-    )
-    if not exist "%pkgDir%\%2.mfp" if not exist "%pkgMeta%\%2" (
-        echo Package not installed.
-        echo [neopkg] ERROR: package not installed >>"%logfile%"
-        goto :eof
-    )
-    if "%dirWritable%"=="nope" (
-        echo Cannot uninstall package in read-only mode!
-        echo [neopkg] ERROR: package cannot be uninstalled in read-only mode >>%logfile%
-        goto :eof
-    )
-
-    echo Uninstalling package...
-    del "%pkgDir%\%2.mfp" /f /q
-    echo.
-    echo Unregistering package...
-    del "%pkgMeta%\%2" /f /q
-    echo.
-    if exist "%pkgDir%\%2.mfp" if exist "%pkgMeta%\%2" (
-        echo Failed to uninstall package!
-        goto :eof
-    )
-    echo Package %2 uninstalled.
-    goto :eof
-)
-
-if "%1"=="info" (
-    if "%2"=="" (
-        echo Input a package name.
-        echo [neopkg] ERROR: package name empty! >>"%logfile%"
-        goto :eof
-    )
-    if not exist "%pkgDir%" if not exist "%pkgMeta%" if not exist "%exeCache%" (
-        echo Package directories not found!
-        echo [neopkg] ERROR: package directories not found >>"%logfile%"
-        goto :eof
-    )
-    if not exist "%pkgDir%\%2.mfp" if not exist "%pkgMeta%\%2" (
-        echo Package not installed.
-        echo [neopkg] ERROR: package not installed >>"%logfile%"
-        goto :eof
-    )
-    type "%pkgMeta%\%2"
-    goto :eof
-)
-
-if "%1"=="list" (
-    echo Installed packages:
-    echo.
-    dir /a:-d /b "%pkgMeta%/"
-    echo [neopkg] INFO: listed installed packages >>"%logfile%"
-    goto :eof
-)
-
-if "%1"=="run" (
-    if "%2"=="" (
-        echo Input a package name.
-        echo [neopkg] ERROR: package name empty! >>"%logfile%"
-        goto :eof
-    )
-    if not exist "%pkgDir%" if not exist "%pkgMeta%" if not exist "%exeCache%" (
-        echo Package directories not found!
-        echo [neopkg] ERROR: package directories not found >>"%logfile%"
-        goto :eof
-    )
-    if not exist "%pkgDir%\%2.mfp" if not exist "%pkgMeta%\%2" (
-        echo Package not installed.
-        echo [neopkg] ERROR: package not installed >>"%logfile%"
-        goto :eof
-    )
-    echo [neopkg] INFO: package "%2.mfp" found >>"%logfile%"
-    if exist "%exeCache%\mfp-%2.bat" (
-        echo Another instance of this program is already running!
-        echo You may be able to fix this by running this command:
-        echo.
-        echo neopkg clear-cache
-        echo [neopkg] ERROR: package "%2" already present in cache! >>"%logfile%"
-        goto :eof
-    )
-    type "%pkgDir%\%2.mfp">"%exeCache%\mfp-%2.bat"
-    :: brute force arguments into this lmao
-    title %2
-    call "%exeCache%\mfp-%2.bat" %3 %4 %5 %6 %7 %8 %9
-    :: delete the cached file we just made
-    del "%exeCache%\mfp-%2.bat" /f /q
-    goto :eof
-)
-
-if "%1"=="clear-cache" (
-    if not exist "%pkgDir%" if not exist "%pkgMeta%" if not exist "%exeCache%" (
-        echo Package directories not found!
-        echo [neopkg] ERROR: package directories not found >>"%logfile%"
-        goto :eof
-    )
-    if "%dirWritable%"=="nope" (
-        echo Cannot clear cache in read-only mode!
-        echo [neopkg] ERROR: Neopkg exec cache cannot be cleared in read-only mode >>%logfile%
-        goto :eof
-    )
-
-    call :proctector
-    if "%authorized%" NEQ "true" (
-        goto :eof
-    )
-    del "%exeCache%\*" /f /q
-    echo Done.
-    echo [neopkg] INFO: cleared neopkg exec cache >>"%logfile%"
-    goto :eof
-)
-
-if "%1"=="available" (
-    if not exist "%pkgDir%" if not exist "%pkgMeta%" if not exist "%exeCache%" (
-        echo Package directories not found!
-        echo [neopkg] ERROR: package directories not found >>"%logfile%"
-        goto :eof
-    )
-    if "%dirWritable%"=="nope" (
-        echo Package list cannot be downloaded in read-only mode!
-        echo [neopkg] ERROR: Cannot get package list in read-only mode >>%logfile%
-        goto :eof
-    )
-
-    set "curlfound="
-    call :curlcheck
-    if "%curlfound%"=="nope" (
-        set "curlfound="
-        goto :eof
-    )
-    setlocal enabledelayedexpansion
-    set "curlErr=%pkgDir%\curl-error.txt"
-    echo Downloading package list...
-    echo.
-    :: urls are hardcoded... change these someday
-    echo [neopkg] INFO: downloading package list from https://raw.githubusercontent.com/knbn1/mfos-next-packages/refs/heads/main/stuffs/remote-packages.txt >>"%logfile%"
-    curl --show-error --fail --silent --output "%pkgDir%\remote-packages.txt" https://raw.githubusercontent.com/knbn1/mfos-next-packages/refs/heads/main/stuffs/remote-packages.txt 2>"!curlErr!"
-    set /p curlout=<"!curlErr!"
-    if "!curlout!"=="" (
-        echo [neopkg] INFO: downloaded package list successfully >>"%logfile%"
-        type "%pkgDir%\remote-packages.txt"
-        del /f /q "!curlErr!"
-        goto :eof
-    ) else (
-        echo Failed to download package list.
-        echo.
-        echo !curlout!
-        echo [neopkg] ERROR: curl failed: "!curlout!" >>"%logfile%"
-        del /f /q "!curlErr!"
-        goto :eof
+for %%A in (install uninstall info list run clear-cache available) do (
+    if /I "%~1"=="%%A" (
+        call :neopkg_%%~A "%~2" & goto :eof
     )
 )
 
@@ -228,26 +19,242 @@ echo.
 echo Packages are downloaded from https://github.com/knbn1/mfos-next-packages
 goto :eof
 
+
+:neopkg_install
+if "%~1"=="" (
+        echo Input a package name.
+        echo [neopkg] ERROR: package name empty! >>"%logfile%"
+        goto :eof
+)
+if "%dirWritable%"=="nope" (
+    echo Package cannot be installed in read-only mode!
+    echo [neopkg] ERROR: Cannot install package in read-only mode >>%logfile%
+    goto :eof
+)
+for %%D in ("%pkgDir%";"%pkgMeta%";"%exeCache%") do (
+    if not exist "%%~D" (md "%%~D")
+)
+
+setlocal
+call :curlcheck
+if "%curlfound%"=="nope" (goto :eof)
+
+set "pkgLink=https://raw.githubusercontent.com/knbn1/mfos-next-packages/refs/heads/main/%~1.mfp"
+set "pkgFile=%pkgDir%\%~1.mfp"
+set "curlErr=%pkgDir%\curl-error.txt"
+
+echo Downloading package %~1
+echo [neopkg] INFO: downloading package %~1 from %pkgLink% >>"%logfile%"
+echo.
+curl --show-error --fail --silent --output "%pkgFile%" "%pkgLink%" 2>"%curlErr%"
+set /p curlout=<"%curlErr%" & del /f /q "%curlErr%"
+
+if not "%curlOut%"=="" (
+    echo Failed to download package.
+    echo.
+    echo %curlOut%
+    echo [neopkg] ERROR: curl failed: "%curlOut%" >>"%logfile%"
+    goto :eof
+)
+echo [neopkg] INFO: downloaded %~1 successfully >>"%logfile%"
+echo Registering package...
+echo.
+echo Package name: "%~1" >"%pkgMeta%\%~1"
+echo Install link: %pkgLink% >>"%pkgMeta%\%~1"
+echo Install date: %time% %date% >>"%pkgMeta%\%~1"
+echo [neopkg] INFO: generated package metadata file >>"%logfile%"
+echo Installed package %~1
+goto :eof
+
+
+:neopkg_uninstall
+if "%~1"=="" (
+    echo Input a package name.
+    echo [neopkg] ERROR: package name empty! >>"%logfile%"
+    goto :eof
+)
+if "%dirWritable%"=="nope" (
+    echo Cannot uninstall package in read-only mode!
+    echo [neopkg] ERROR: package cannot be uninstalled in read-only mode >>%logfile%
+    goto :eof
+)
+for %%D in ("%pkgDir%";"%pkgMeta%";"%exeCache%") do (
+    if not exist "%%~D" (md "%%~D")
+)
+for %%P in ("%pkgDir%\%~1.mfp";"%pkgMeta%\%~1") do (if not exist "%%~P" (
+    echo Package not installed.
+    echo [neopkg] ERROR: package not installed >>"%logfile%"
+    goto :eof
+))
+
+echo Uninstalling package...
+del "%pkgDir%\%~1.mfp" /f /q
+echo.
+echo Unregistering package...
+del "%pkgMeta%\%~1" /f /q
+echo.
+echo Package %~1 uninstalled.
+goto :eof
+
+
+:neopkg_info
+if "%~1"=="" (
+    echo Input a package name.
+    echo [neopkg] ERROR: package name empty! >>"%logfile%"
+    goto :eof
+)
+for %%D in ("%pkgDir%";"%pkgMeta%";"%exeCache%") do (
+    if not exist "%%~D" (if "%dirWritable%"=="yessir" (md "%%~D") else (
+        echo Package directories not found!
+        echo [neopkg] ERROR: package directories not found >>"%logfile%"
+        goto :eof
+    ))
+)
+for %%P in ("%pkgDir%\%~1.mfp";"%pkgMeta%\%~1") do (if not exist "%%~P" (
+    echo Package not installed.
+    echo [neopkg] ERROR: package not installed >>"%logfile%"
+    goto :eof
+))
+
+type "%pkgMeta%\%~1"
+goto :eof
+
+
+:neopkg_list
+if not exist "%pkgMeta%" (
+    if "%dirWritable%"=="yessir" (md "%pkgMeta%") else (
+        echo Package (meta) directory not found!
+        echo [neopkg] ERROR: package (meta) directory not found >>"%logfile%"
+        goto :eof
+    )
+)
+echo Installed packages:
+echo.
+dir /a:-d /b "%pkgMeta%"
+echo [neopkg] INFO: listed installed packages >>"%logfile%"
+goto :eof
+
+
+:neopkg_run
+if "%~1"=="" (
+    echo Input a package name.
+    echo [neopkg] ERROR: package name empty! >>"%logfile%"
+    goto :eof
+)
+if "%dirWritable%"=="nope" (
+    echo Package cannot be run in read-only mode!
+    echo [neopkg] ERROR: Cannot run package in read-only mode >>%logfile%
+    goto :eof
+)
+for %%D in ("%pkgDir%";"%pkgMeta%";"%exeCache%") do (
+    if not exist "%%~D" (md "%%~D")
+)
+for %%P in ("%pkgDir%\%~1.mfp";"%pkgMeta%\%~1") do (if not exist "%%~P" (
+    echo Package not installed.
+    echo [neopkg] ERROR: package not installed >>"%logfile%"
+    goto :eof
+))
+
+echo [neopkg] INFO: package "%~1.mfp" found >>"%logfile%"
+if exist "%exeCache%\mfp-%~1.bat" (
+    echo Another instance of this program is already running!
+    echo You may be able to fix this by running this command:
+    echo.
+    echo neopkg clear-cache
+    echo [neopkg] ERROR: package "%~1" already present in cache! >>"%logfile%"
+    goto :eof
+)
+type "%pkgDir%\%~1.mfp">"%exeCache%\mfp-%~1.bat"
+title %~1
+for "tokens=1,* usebackq" %%G in ('%*') do (
+    call "%exeCache%\mfp-%~1.bat" %%H
+)
+:: delete the cached file we just made
+del "%exeCache%\mfp-%~1.bat" /f /q
+goto :eof
+
+
+:neopkg_clear-cache
+if "%dirWritable%"=="nope" (
+    echo Cannot clear cache in read-only mode!
+    echo [neopkg] ERROR: Neopkg exec cache cannot be cleared in read-only mode >>%logfile%
+    goto :eof
+)
+for %%D in ("%pkgDir%";"%pkgMeta%";"%exeCache%") do (
+    if not exist "%%~D" (md "%%~D")
+)
+call :proctector
+if not "%authorized%"=="true" (goto :eof)
+
+del "%exeCache%\*" /f /q
+echo Done.
+echo [neopkg] INFO: cleared neopkg exec cache >>"%logfile%"
+goto :eof
+
+
+:neopkg_available
+if "%dirWritable%"=="nope" (
+    echo Package list cannot be downloaded in read-only mode!
+    echo [neopkg] ERROR: Cannot get package list in read-only mode >>%logfile%
+    goto :eof
+)
+for %%D in ("%pkgDir%";"%pkgMeta%";"%exeCache%") do (
+    if not exist "%%~D" (md "%%~D")
+)
+
+setlocal
+call :curlcheck
+if "%curlfound%"=="nope" (goto :eof)
+
+set "curlErr=%pkgDir%\curl-error.txt"
+set "listLink=https://raw.githubusercontent.com/knbn1/mfos-next-packages/refs/heads/main/stuffs/remote-packages.txt"
+set "listFile=%pkgDir%\remote-packages.txt"
+
+echo Downloading package list...
+echo.
+:: urls are hardcoded... change these someday
+echo [neopkg] INFO: downloading package list from %listLink% >>"%logfile%"
+curl --show-error --fail --silent --output "%listFile%" "%listLink%" 2>"%curlErr%"
+set /p curlout=<"%curlErr%" & del /f /q "%curlErr%"
+
+if not "%curlOut%"=="" (
+    echo Failed to download package list.
+    echo.
+    echo %curlOut%
+    echo [neopkg] ERROR: curl failed: "%curlOut%" >>"%logfile%"
+    goto :eof
+)
+echo [neopkg] INFO: downloaded package list successfully >>"%logfile%"
+type "%pkgDir%\remote-packages.txt"
+goto :eof
+
 :: curl check
 
 :curlcheck
-curl --version >nul
-if "%errorlevel%"=="0" (
+curl --version >nul && (
     echo [neopkg] DEBUG: curl found! >>"%logfile%"
+    set "curlfound=yessir"
     goto :eof
-) else (
-    set "curlfound=nope"
-    echo curl not found!
-    echo [neopkg] WARN: curl not found in PATH>>"%logfile%"
-    echo.
-    set /p conf="Install curl via winget? (y/[n]): "
-    echo.
-    if not "%conf%"=="y" (
-        echo [neopkg] ERROR: curl installation cancelled. >>"%logfile%"
-        echo curl installation cancelled by user.
-        goto :eof
-    )
-    echo [neopkg] INFO: installing curl with Winget >>"%logfile%"
-    winget install --id curl.curl --accept-source-agreements --accept-package-agreements || goto :eof
+)
+set "curlfound=nope"
+echo curl not found!
+echo [neopkg] WARN: curl not found in PATH>>"%logfile%"
+echo.
+
+set /p conf="Install curl via winget? (y/[n]): "
+echo.
+if not "%conf%"=="y" (
+    echo curl installation cancelled.
+    echo [neopkg] ERROR: curl installation cancelled. >>"%logfile%"
+    goto :eof
 )
 
+echo [neopkg] INFO: installing curl with Winget >>"%logfile%"
+winget install --id curl.curl --accept-source-agreements --accept-package-agreements
+if ERRORLEVEL 1 (
+    echo curl installation failed.
+    [neopkg] ERROR: curl installation failed. >>"%logfile%"
+    goto :eof
+)
+set "curlfound=yessir"
+goto :eof

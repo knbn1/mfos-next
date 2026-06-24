@@ -71,7 +71,7 @@ if not exist "%toggles%\incognito" (set "history=%userDir%/mfos-history.txt") el
 :: Flag directory writability
 
 call :checkWritable "%~dp0" "%excludeWriteCheck%" 0 
-if ERRORLEVEL 1 (call :writeCheckFail boot)
+if ERRORLEVEL 10 (call :writeCheckFail boot)
 set "dirWritable=yessir"
 
 :: Start logging
@@ -458,7 +458,7 @@ goto bootfail
 
 :writeCheckFail
 echo.
-echo Current directory and/or subdirectories are read-only
+echo Current directory and/or subdirectories are read-only.
 if "%1"=="boot" (goto bootfail)
 goto :eof
 

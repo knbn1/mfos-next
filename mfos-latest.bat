@@ -148,34 +148,25 @@ echo Initializing devices...
 echo.
 
 cd /d "%disk0p1%"
-if not exist "%devices%" (
-    md devices
-)
-if not exist "%pkgHelp%" (
-    md help
-)
-if exist "%devices%" if exist "%pkgHelp%" (
-    echo [kdevinit] INFO: found devices directory in disk0p1 >>"%logfile%"
-    echo [kdevinit] INFO: found help sections directory in disk0p1 >>"%logfile%"
-    echo System partition > "%devices%\disk0p1"
-    call :devinitok disk0p1
-) else (goto devinitfail disk0p1)
+if not exist "%devices%" (md devices)
+if not exist "%pkgHelp%" (md help)
+
+echo [kdevinit] INFO: found devices directory in disk0p1 >>"%logfile%"
+echo [kdevinit] INFO: found help sections directory in disk0p1 >>"%logfile%"
+echo System partition > "%devices%\disk0p1"
+call :devinitok disk0p1
 
 echo ^:^: Memory Sector 1 >"%devices%\memsect1.bat"
-if not exist "%devices%\memsect1.bat" (goto devinitfail memsect1)
 echo [kdevinit] INFO: generated memsect1 >>"%logfile%"
 call :devinitok memsect1
 
 if not exist "%devices%\memsect2" (md "%devices%\memsect2")
-if not exist "%devices%\memsect2" (goto devinitfail memsect2)
 echo [kdevinit] INFO: generated memsect2 >>"%logfile%"
 if not exist "%exeCache%" (mkdir "%devices%\memsect2\execache")
-if not exist "%exeCache%" (goto devinitfail memsect2)
 echo [kdevinit] INFO: generated memsect2 neopkg execache >>"%logfile%"
 call :devinitok memsect2
 
 echo Memory sector 3 - Secret Block >"%devices%\memsect3"
-if not exist "%devices%\memsect3" (goto devinitfail memsect3)
 echo [kdevinit] INFO: generated memsect3 >>"%logfile%"
 call :devinitok memsect3
 
@@ -196,9 +187,9 @@ for %%C in (%sysModDeps%) do (
     if exist "%disk0p1%\%%C.mcm" (
         echo. >>"%devices%\memsect1.bat"
         type "%disk0p1%\%%C.mcm" >>"%devices%\memsect1.bat"
-        call :loadmodok /%sysDir%/%%C.mcm
+        call :loadmodok "/%sysDir%/%%C.mcm"
     ) else (
-        goto loadmodfail /%sysDir%/%%C.mcm
+        call :loadmodfail "/%sysDir%/%%C.mcm"
     )
 )
 
@@ -222,15 +213,11 @@ if not exist "%disk0p2%" (
     cd /d "%disk0%"
     md "%userData%"
     echo.
-    if not exist "%disk0p2%" (
-        echo Userdata partition creation failed!
-        echo [kusrinit] ERROR: userdata partition creation failed >>"%logfile%"
-        goto pauseexit
-    )
 )
 
 :: the bare minimum to get stuff to work
 :: if mfos breaks you will need to download the latest system disks from github
+rem Don't worry, It can't break with my new writability check
 
 if not exist "%userDir%" (
     echo Userdata for user %user% not found!
@@ -241,11 +228,6 @@ if not exist "%userDir%" (
     cd /d "%disk0p2%"
     md "%user%"
     echo.
-    if not exist "%userDir%\" (
-        echo Userdata creation for %user% failed!
-        echo [kusrinit] ERROR: userdata creation for user %user% failed >>"%logfile%"
-        goto pauseexit
-    )
 )
 
 if not exist "%userSysDatadir%" (
@@ -254,11 +236,6 @@ if not exist "%userSysDatadir%" (
     cd /d "%userDir%"
     md "%userSysData%"
     echo.
-    if not exist "%userSysDatadir%\" (
-        echo Failed to create user system data!
-        echo [kusrinit] ERROR: user system data creation for user %user% failed >>"%logfile%"
-        goto pauseexit
-    )
 )
 
 if not exist "%toggles%\" (
@@ -267,11 +244,6 @@ if not exist "%toggles%\" (
     cd /d "%userSysDatadir%"
     md toggles
     echo.
-    if not exist "%userSysDatadir%\toggles" (
-        echo Toggle directory creation failed!
-        echo [kusrinit] ERROR: toggle directory creation for user %user% failed >>"%logfile%"
-        goto pauseexit
-    )
 )
 
 if not exist "%pkgDir%\" (
@@ -284,11 +256,6 @@ if not exist "%pkgDir%\" (
     md installed
     md help
     echo.
-    if not exist "%pkgDir%\" if not exist "%pkgMeta%\" if not exist "%pkgHelp%\" (
-        echo Package directory creation failed!
-        echo [kusrinit] ERROR: package directory creation for user %user% failed >>"%logfile%"
-        goto pauseexit
-    )
 )
 
 if not exist "%userMods%\" (
@@ -297,16 +264,6 @@ if not exist "%userMods%\" (
     cd /d "%userSysDatadir%"
     md %modsDir%
     echo.
-    if not exist "%userMods%\" (
-        echo Module directory creation failed!
-        echo [kusrinit] ERROR: module directory creation for user %user% failed >>"%logfile%"
-        goto pauseexit
-    )
-)
-
-if exist "%userDir%" (
-    echo Logging in as %user%
-    echo [kusrinit] INFO: logging in as %user% >>"%logfile%"
 )
 
 :: Load user modules
@@ -344,12 +301,6 @@ echo.
 echo Welcome to MicroflashOS!
 echo [cmd] INFO: initialized prompt >>"%logfile%"
 echo.
-if not exist "%userDir%" (
-    echo Userdata for user %user% not found.
-    echo [kusrinit] ERROR: no userdata for user %user% >>"%logfile%"
-    echo.
-    goto pauseexit
-)
 echo Logged in as %user%
 echo [cmd] INFO: current user: %user% >>"%logfile%"
 echo.
@@ -381,13 +332,6 @@ if exist "%toggles%\showdir" (
     echo [cmd] DEBUG: showing current directory >>"%logfile%"
     echo Current directory: %cd%
     echo.
-)
-
-if not exist "%devices%\memsect1.bat" (
-    echo [kernel] ERROR: could not load memsect1 >>"%logfile%"
-	echo.
-    echo FATAL: Memory Sector 1 failure!
-	goto pauseexit
 )
 
 :: Immediately jump to memsect1 to parse commands
@@ -441,8 +385,8 @@ echo [kdevinit] INFO: %1 initialized >>"%logfile%"
 goto :eof
 
 :loadmodok
-echo Loaded %1
-echo [kmodsinit] INFO: loaded %1 >>"%logfile%"
+echo Loaded %~1
+echo [kmodsinit] INFO: loaded %~1 >>"%logfile%"
 goto :eof
 
 :devinitfail
@@ -452,8 +396,8 @@ goto bootfail
 
 :loadmodfail
 echo.
-echo FAIL %1
-echo [kmodsinit] ERROR: failed to load %1 >>"%logfile%"
+echo FAIL %~1
+echo [kmodsinit] ERROR: failed to load %~1 >>"%logfile%"
 goto bootfail
 
 :writeCheckFail
@@ -477,7 +421,7 @@ goto :eof
 
 :pauseexit
 call :halt
-exit
+cmd /k exit
 
 :halt
 echo.

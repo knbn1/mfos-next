@@ -41,6 +41,23 @@ goto :eof
 set "enforcereboot=true"
 goto :eof
 
+:writeReheck
+call :checkWritable "%CD%" "%excludeWriteCheck%" 0
+if ERRORLEVEL 10 (
+	echo WARNING: Current directory contains read-only directories!
+	echo [core] WARN: Current directory "%CD%" contains read-only directories >>"%logfile%"
+	if exist "%toggles%\noReadOnly" (cmd /k exit)
+	
+	echo WARNING: You are in read-only mode.
+    echo [core] WARN: Read-only mode enabled >>"%logfile%"
+    set "dirWritable=nope"
+	goto :eof
+)
+echo You are in normal mode. Write access enabled.
+echo [core] Switched to normal mode (Write access enabled) >>"%logfile%"
+set "dirWritable=yessir"
+goto :eof
+
 :shutdown
 title Shutting down...
 echo Shutting down...

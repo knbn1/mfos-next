@@ -58,7 +58,7 @@ set "userModsAllowed="
 
 :: Whitelisted and blacklisted commands
 
-set "cmdlist=about help clock print clear reboot shutdown mkdir rename delete list cd home homewipe neopkg mountsys modules toggles getvars users"
+set "cmdlist=about help clock print clear reboot writeRecheck shutdown mkdir rename delete list cd home homewipe neopkg mountsys modules toggles getvars users"
 set "disallowed="
 
 :: Startup parameters

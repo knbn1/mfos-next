@@ -97,8 +97,9 @@ if "%1"=="list" (
     echo.
     echo slowboot: Add pauses during boot sequence
     echo echoon: Disables echo OFF so command that generated shell output is shown
-    echo noclear: Disable clearing shell output (this also affects the "clear" command)
+    echo noclear: Disables clearing shell output (this also affects the "clear" command)
     echo nolog: Disables system logging functions within MicroflashOS
+    echo noAutoWriteRecheck: Disables automatic reflagging of directory writability
     goto :eof
 )
 echo Invalid arguments!

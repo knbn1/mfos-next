@@ -28,7 +28,7 @@ if "%~1"=="" (
 )
 if "%dirWritable%"=="nope" (
     echo Package cannot be installed in read-only mode!
-    echo [neopkg] ERROR: Cannot install package in read-only mode >>%logfile%
+    echo [neopkg] ERROR: Cannot install package in read-only mode >>"%logfile%"
     goto :eof
 )
 for %%D in ("%pkgDir%";"%pkgMeta%";"%exeCache%") do (
@@ -143,7 +143,7 @@ if "%~1"=="" (
 )
 if "%dirWritable%"=="nope" (
     echo Package cannot be run in read-only mode!
-    echo [neopkg] ERROR: Cannot run package in read-only mode >>%logfile%
+    echo [neopkg] ERROR: Cannot run package in read-only mode >>"%logfile%"
     goto :eof
 )
 for %%D in ("%pkgDir%";"%pkgMeta%";"%exeCache%") do (
@@ -177,7 +177,7 @@ goto :eof
 :neopkg_clear-cache
 if "%dirWritable%"=="nope" (
     echo Cannot clear cache in read-only mode!
-    echo [neopkg] ERROR: Neopkg exec cache cannot be cleared in read-only mode >>%logfile%
+    echo [neopkg] ERROR: neopkg exec cache cannot be cleared in read-only mode >>"%logfile%"
     goto :eof
 )
 for %%D in ("%pkgDir%";"%pkgMeta%";"%exeCache%") do (
@@ -195,7 +195,7 @@ goto :eof
 :neopkg_available
 if "%dirWritable%"=="nope" (
     echo Package list cannot be downloaded in read-only mode!
-    echo [neopkg] ERROR: Cannot get package list in read-only mode >>%logfile%
+    echo [neopkg] ERROR: Cannot get package list in read-only mode >>"%logfile%"
     goto :eof
 )
 for %%D in ("%pkgDir%";"%pkgMeta%";"%exeCache%") do (

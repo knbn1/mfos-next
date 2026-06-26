@@ -75,7 +75,7 @@ if "%~1"=="" (
 )
 if "%dirWritable%"=="nope" (
     echo Cannot uninstall package in read-only mode!
-    echo [neopkg] ERROR: package cannot be uninstalled in read-only mode >>%logfile%
+    echo [neopkg] ERROR: package cannot be uninstalled in read-only mode >>"%logfile%"
     goto :eof
 )
 for %%D in ("%pkgDir%";"%pkgMeta%";"%exeCache%") do (

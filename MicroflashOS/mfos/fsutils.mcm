@@ -12,7 +12,7 @@ if "%~1"=="" (
 )
 if "%dirWritable%"=="nope" (
     echo Read-only: Failed to create directory "%~1"!
-    echo [fsutils] ERROR: (read-only) failed to create directory "%~1" >>"%logfile%"
+    echo [fsutils] ERROR: failed to create directory "%~1", is the directory read-only? >>"%logfile%"
     goto :eof
 )
 if exist "%~1" (
@@ -37,7 +37,7 @@ if "%~1"=="" (
 )
 if "%dirWritable%"=="nope" (
     echo Read-only: Failed to rename "%~1"!
-    echo [fsutils] ERROR: (Read-only) failed to rename "%~1" >>"%logfile%"
+    echo [fsutils] ERROR: failed to rename "%~1", is the directory read-only? >>"%logfile%"
     goto :eof
 )
 if not exist "%~1" (
@@ -81,7 +81,7 @@ if /I "%~1"=="file" (
 
 if "%dirWritable%"=="nope" (
     echo Read-only: Failed to delete %targetType%!
-    echo [fsutils] (Read-only) ERROR: failed to delete %targetType% "%~2" >>"%logfile%"
+    echo [fsutils] ERROR: failed to delete %targetType% "%~2", is the directory read-only? >>"%logfile%"
     goto :eof
 )
 if not exist "%~2" (
@@ -125,13 +125,13 @@ if not exist "%~1" (
 call :checkWritable "%~1" "%excludeWriteCheck%" 0
 if ERRORLEVEL 10 (
     echo WARNING: Target contains read-only directories!
-    echo [fsutils] WARN: Target "%~1" contains read-only directories >>"%logfile%"
+    echo [fsutils] WARN: target "%~1" contains read-only directories >>"%logfile%"
     if exist "%toggles%\noReadOnly" (cmd /k exit)
 
     echo Switching to read-only mode...
     echo.
     echo WARNING: You are now in read-only mode.
-    echo [fsutils] WARN: Read-only mode enabled >>"%logfile%"
+    echo [fsutils] WARN: read-only mode enabled >>"%logfile%"
     set "dirWritable=nope"
 ) else (set "dirWritable=yessir")
 cd "%~1"
@@ -150,7 +150,7 @@ if not exist "%userDir%" (
 call :checkWritable "%userDir%" "%excludeWriteCheck%" 0
 if ERRORLEVEL 10 (
     echo Home directory contains read-only subdirectories!
-    echo [fsutils] ERROR: Home directory "%userDir%" contains read-only subdirectories >>"%logfile%"
+    echo [fsutils] ERROR: home directory "%userDir%" contains read-only subdirectories >>"%logfile%"
     goto :eof
 )
 

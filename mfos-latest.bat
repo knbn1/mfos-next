@@ -387,7 +387,7 @@ goto bootfail
 
 :writeCheckFail
 echo.
-echo Current directory and/or subdirectories are read-only.
+echo Cannot boot with read-only home directory.
 if "%1"=="boot" (goto bootfail)
 goto :eof
 

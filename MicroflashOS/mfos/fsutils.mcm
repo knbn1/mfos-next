@@ -13,6 +13,7 @@ if "%~1"=="" (
 if "%dirWritable%"=="nope" (
     echo Read-only: Failed to create directory "%~1"!
     echo [fsutils] ERROR: failed to create directory "%~1", is the directory read-only? >>"%logfile%"
+    if exist "%toggles%\noReadOnly" (cmd /k exit)
     goto :eof
 )
 if exist "%~1" (
@@ -38,6 +39,7 @@ if "%~1"=="" (
 if "%dirWritable%"=="nope" (
     echo Read-only: Failed to rename "%~1"!
     echo [fsutils] ERROR: failed to rename "%~1", is the directory read-only? >>"%logfile%"
+    if exist "%toggles%\noReadOnly" (cmd /k exit)
     goto :eof
 )
 if not exist "%~1" (
@@ -82,6 +84,7 @@ if /I "%~1"=="file" (
 if "%dirWritable%"=="nope" (
     echo Read-only: Failed to delete %targetType%!
     echo [fsutils] ERROR: failed to delete %targetType% "%~2", is the directory read-only? >>"%logfile%"
+    if exist "%toggles%\noReadOnly" (cmd /k exit)
     goto :eof
 )
 if not exist "%~2" (

@@ -76,6 +76,7 @@ if ERRORLEVEL 10 (
 	echo WARNING: Home directory contains read-only directories!
 	echo System likely to be unstable and produce unpredictable behavior!
 	echo [chkwrite] WARN: Home directory "%mfosLocation" contains read-only directories >>"%logfile%"
+	if exist "%toggles%\noReadOnly" (cmd /k exit)
 	goto :eof
 )
 echo Home directory has full write access.

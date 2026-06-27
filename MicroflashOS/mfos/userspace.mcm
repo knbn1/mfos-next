@@ -31,6 +31,7 @@ if "%~1"=="" (
 if "%homeWritable%"=="nope" (
     echo Cannot create user while home directory is read-only!
     echo [users] ERROR: cannot create user in read-only home directory >>"%logfile%"
+    if exist "%toggles%\noReadOnly" (cmd /k exit)
     goto :eof
 )
 echo [users] INFO: creating user %~1 >>"%logfile%"
@@ -108,6 +109,7 @@ call :checkWritable "%userDir%" "%excludeWriteCheck%" 0
 if ERRORLEVEL 10 (
     echo User home directory contains read-only subdirectories!
     echo [users] ERROR: user home directory "%userDir%" contains read-only subdirectories >>"%logfile%"
+    if exist "%toggles%\noReadOnly" (cmd /k exit)
     goto :eof
 )
 
@@ -131,6 +133,7 @@ if not exist "%disk0p2%" (
 if "%homeWritable%"=="nope" (
     echo Cannot wipe read-only home directory!
     echo [users] ERROR: could not wipe read-only home directory >>"%logfile%"
+    if exist "%toggles%\noReadOnly" (cmd /k exit)
     goto :eof
 )
 call :proctector

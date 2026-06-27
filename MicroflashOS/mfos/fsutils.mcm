@@ -74,7 +74,7 @@ if /I "%~1"=="file" (
 ) else if /I "%~1"=="directory" (
     set "targetType=directory"
     set "typeUpper=Directory"
-    set "typeCmd=del ^"%~2^" /s /q"
+    set "typeCmd=rd ^"%~2^" /s /q"
 ) else (
     echo Invalid arguments.
     echo [fsutils] ERROR: invalid arguments >>"%logfile%"

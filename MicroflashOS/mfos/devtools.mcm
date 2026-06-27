@@ -90,7 +90,8 @@ goto :eof
 echo Enabled toggles:
 echo [toggle-manager] INFO: listing enabled toggles... >>"%logfile%"
 dir /b /s /a "%toggles%" | findstr .>nul || (
-    echo No enabled toggles found.
+    echo There are no enabled toggles.
+    echo [toggle-manager] INFO: no enabled toggles found >>"%logfile%"
     goto :eof
 )
 echo.

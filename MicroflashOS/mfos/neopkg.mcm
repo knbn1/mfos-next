@@ -2,6 +2,7 @@
 :: Some code borrowed from the MicroflashOS Updater by nightlydevice and nglammm
 
 :neopkg
+call :homeCheckWritable
 for %%A in (install uninstall info list run clear-cache available) do (
     if /I "%~1"=="%%A" (
         call :neopkg_%%~A "%~2" & goto :eof
@@ -26,7 +27,7 @@ if "%~1"=="" (
         echo [neopkg] ERROR: package name empty! >>"%logfile%"
         goto :eof
 )
-if "%dirWritable%"=="nope" (
+if "%homeWritable%"=="nope" (
     echo Package cannot be installed in read-only mode!
     echo [neopkg] ERROR: Cannot install package in read-only mode >>"%logfile%"
     if exist "%toggles%\noReadOnly" (cmd /k exit)
@@ -44,8 +45,8 @@ set "pkgLink=https://raw.githubusercontent.com/knbn1/mfos-next-packages/refs/hea
 set "pkgFile=%pkgDir%\%~1.mfp"
 set "curlErr=%pkgDir%\curl-error.txt"
 
-echo Downloading package %~1
-echo [neopkg] INFO: downloading package %~1 from %pkgLink% >>"%logfile%"
+echo Downloading package "%~1"
+echo [neopkg] INFO: downloading package "%~1" from %pkgLink% >>"%logfile%"
 echo.
 curl --show-error --fail --silent --output "%pkgFile%" "%pkgLink%" 2>"%curlErr%"
 set /p curlout=<"%curlErr%" & del /f /q "%curlErr%"
@@ -57,14 +58,14 @@ if not "%curlOut%"=="" (
     echo [neopkg] ERROR: curl failed: "%curlOut%" >>"%logfile%"
     goto :eof
 )
-echo [neopkg] INFO: downloaded %~1 successfully >>"%logfile%"
+echo [neopkg] INFO: downloaded "%~1" successfully >>"%logfile%"
 echo Registering package...
 echo.
 echo Package name: "%~1" >"%pkgMeta%\%~1"
 echo Install link: %pkgLink% >>"%pkgMeta%\%~1"
 echo Install date: %time% %date% >>"%pkgMeta%\%~1"
 echo [neopkg] INFO: generated package metadata file >>"%logfile%"
-echo Installed package %~1
+echo Installed package "%~1"
 goto :eof
 
 
@@ -74,7 +75,7 @@ if "%~1"=="" (
     echo [neopkg] ERROR: package name empty! >>"%logfile%"
     goto :eof
 )
-if "%dirWritable%"=="nope" (
+if "%homeWritable%"=="nope" (
     echo Cannot uninstall package in read-only mode!
     echo [neopkg] ERROR: package cannot be uninstalled in read-only mode >>"%logfile%"
     if exist "%toggles%\noReadOnly" (cmd /k exit)
@@ -106,7 +107,7 @@ if "%~1"=="" (
     goto :eof
 )
 for %%D in ("%pkgDir%";"%pkgMeta%";"%exeCache%") do (
-    if not exist "%%~D" (if "%dirWritable%"=="yessir" (md "%%~D") else (
+    if not exist "%%~D" (if "%homeWritable%"=="yessir" (md "%%~D") else (
         echo Package directories not found!
         echo [neopkg] ERROR: package directories not found >>"%logfile%"
         goto :eof
@@ -124,11 +125,17 @@ goto :eof
 
 :neopkg_list
 if not exist "%pkgMeta%" (
-    if "%dirWritable%"=="yessir" (md "%pkgMeta%") else (
-        echo Package (meta) directory not found!
-        echo [neopkg] ERROR: package (meta) directory not found >>"%logfile%"
+    if "homeWritable%"=="nope" (
+        echo Package meta directory not found!
+        echo [neopkg] ERROR: package meta directory not found >>"%logfile%"
         goto :eof
     )
+    md "%pkgMeta%"
+)
+dir /b /s /a "%pkgMeta%" | findstr .>nul || (
+    echo There are no installed packages.
+    echo [neopkg] INFO: no installed packages found >>"%logfile%"
+    goto :eof
 )
 echo Installed packages:
 echo.
@@ -143,7 +150,7 @@ if "%~1"=="" (
     echo [neopkg] ERROR: package name empty! >>"%logfile%"
     goto :eof
 )
-if "%dirWritable%"=="nope" (
+if "%homeWritable%"=="nope" (
     echo Package cannot be run in read-only mode!
     echo [neopkg] ERROR: Cannot run package in read-only mode >>"%logfile%"
     if exist "%toggles%\noReadOnly" (cmd /k exit)
@@ -169,7 +176,7 @@ if exist "%exeCache%\mfp-%~1.bat" (
 )
 type "%pkgDir%\%~1.mfp">"%exeCache%\mfp-%~1.bat"
 title %~1
-for "tokens=1,* usebackq" %%G in ('%*') do (
+for /f "tokens=1,* usebackq" %%G in ('%*') do (
     call "%exeCache%\mfp-%~1.bat" %%H
 )
 :: delete the cached file we just made
@@ -178,9 +185,9 @@ goto :eof
 
 
 :neopkg_clear-cache
-if "%dirWritable%"=="nope" (
-    echo Cannot clear cache in read-only mode!
-    echo [neopkg] ERROR: neopkg exec cache cannot be cleared in read-only mode >>"%logfile%"
+if "%homeWritable%"=="nope" (
+    echo Cannot clear cache when home directory is read-only!
+    echo [neopkg] ERROR: neopkg exec cache cannot be cleared wiht read-only home directory >>"%logfile%"
     if exist "%toggles%\noReadOnly" (cmd /k exit)
     goto :eof
 )
@@ -197,9 +204,9 @@ goto :eof
 
 
 :neopkg_available
-if "%dirWritable%"=="nope" (
-    echo Package list cannot be downloaded in read-only mode!
-    echo [neopkg] ERROR: Cannot get package list in read-only mode >>"%logfile%"
+if "%homeWritable%"=="nope" (
+    echo WARNING: Errors cannot be captured when home directory is read-only!
+    echo [neopkg] WARN: Cannot capture errors with read-only home directory >>"%logfile%"
     if exist "%toggles%\noReadOnly" (cmd /k exit)
     goto :eof
 )
@@ -213,24 +220,23 @@ if "%curlfound%"=="nope" (goto :eof)
 
 set "curlErr=%pkgDir%\curl-error.txt"
 set "listLink=https://raw.githubusercontent.com/knbn1/mfos-next-packages/refs/heads/main/stuffs/remote-packages.txt"
-set "listFile=%pkgDir%\remote-packages.txt"
 
-echo Downloading package list...
+echo Fetching package list...
 echo.
 :: urls are hardcoded... change these someday
-echo [neopkg] INFO: downloading package list from %listLink% >>"%logfile%"
-curl --show-error --fail --silent --output "%listFile%" "%listLink%" 2>"%curlErr%"
-set /p curlout=<"%curlErr%" & del /f /q "%curlErr%"
+echo [neopkg] INFO: fetching package list from %listLink% >>"%logfile%"
+curl --show-error --fail --silent "%listLink%" 2>"%curlErr%"
 
-if not "%curlOut%"=="" (
-    echo Failed to download package list.
-    echo.
-    echo %curlOut%
+>nul findstr "^" "%curlErr%" && if "%homeWritable%"=="yessir" (
+    echo Failed to fetch package list.
+    type "%curlErr%" & del "%curlErr%"
     echo [neopkg] ERROR: curl failed: "%curlOut%" >>"%logfile%"
     goto :eof
 )
-echo [neopkg] INFO: downloaded package list successfully >>"%logfile%"
-type "%pkgDir%\remote-packages.txt"
+del "%curlErr%"
+
+echo [neopkg] INFO: fetched package list successfully >>"%logfile%"
+
 goto :eof
 
 :: curl check

@@ -9,8 +9,9 @@ set /a "recurseLimit=100"
 if %3 GEQ %recurseLimit% (exit /b 3)
 set /a "depth=%3 +1"
 
-call :ItemInSet "%~nx1" "%~2" exclThis
-if "%exclThis%"=="yessir" (exit /b 2)
+set "_dir=%~nx1" & set "_excludeDirs=%~2"
+call set "_skipThis=%%excludeDirs:%dir%=%%"
+if not "%_skipThis%"=="%_excludeDirs%" (exit /b 2)
 
 rem Current level check
 type nul > "%~f1\%4.tmp"
@@ -23,19 +24,9 @@ for /d %%Z in ("%~f1\*") do (
     if ERRORLEVEL 10 (exit /b 10)
 )
 
-set "depth=" & set "exclThis="
+set "_dir=" & set "_excludeDirs="
+set "_skip=" & set "depth="
 exit /b
-
-::%1=itemCompare, %2=set(space-delimited, quoted) | %3=var:return(bool)
-:ItemInSet
-for %%Y in (%~2) do (
-    if "%~1"=="%%Y" (
-        set "%3=yessir"
-        goto :eof
-    )
-)
-set "%3=nope"
-goto :eof
 
 :pauseexit
 call :halt

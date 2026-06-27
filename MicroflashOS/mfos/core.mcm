@@ -42,7 +42,7 @@ set "enforcereboot=true"
 goto :eof
 
 :writerecheck
-for %%A in (dir home) do (
+for %%A in (current home) do (
     if /I "%~1"=="%%A" (
         call :writerecheck_%%~A & goto :eof
     )

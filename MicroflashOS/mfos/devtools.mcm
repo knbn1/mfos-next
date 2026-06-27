@@ -31,7 +31,7 @@ goto :eof
 :toggles
 for %%A in (create delete enabled list) do (
     if /I "%~1"=="%%A" (
-        call :users_%%~A "%~2" & goto :eof
+        call :toggles_%%~A "%~2" & goto :eof
     )
 )
 if not "%~2"=="" (
@@ -89,13 +89,17 @@ goto :eof
 :toggles_enabled
 echo Enabled toggles:
 echo [toggle-manager] INFO: listing enabled toggles... >>"%logfile%"
+dir /b /s /a "%toggles%" | findstr .>nul || (
+    echo No enabled toggles found.
+    goto :eof
+)
 echo.
-dir /a:-d /b "%toggles%\"
+dir /a:-d /b "%toggles%"
 goto :eof
 
 :toggles_list
 echo [toggle-manager] INFO: listing available toggles... >>"%logfile%"
-type "%disk0p1%\help\toggles.mhs"
+type "%disk0p1%\help\toggles.txt"
 goto :eof
 
 :getvars

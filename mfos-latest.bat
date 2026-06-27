@@ -97,14 +97,13 @@ echo.
 :: System disk check
 
 title Finding system disk...
-if exist "%disk0Label%" (
-    echo System disk "%disk0Label%" mounted as /
-    echo [kernel] INFO: system disk is "%disk0Label%" mounted as / >>"%logfile%"
-) else (
+if not exist "%disk0Label%" (
     echo Unable to mount system disk!
     echo [kernel] ERROR: system disk mount failure >>"%logfile%"
     goto bootfail
 )
+echo System disk "%disk0Label%" mounted as /
+echo [kernel] INFO: system disk is "%disk0Label%" mounted as / >>"%logfile%"
 
 :: Version check
 
@@ -115,14 +114,13 @@ echo.
 echo Bundled kernel: %mfosVer%
 echo Detected kernel: %oldver%
 echo.
-if "%oldver%" == "%mfosVer%" (
-    echo MicroflashOS is on the latest version!
-    echo [kernel] INFO: version string valid >>"%logfile%"
-) else (
+if not "%oldver%"=="%mfosVer%" (
     echo Version mismatch!
     echo [kernel] ERROR: expected "%mfosVer%" but got "%oldver%" >>"%logfile%"
     goto bootfail
 )
+echo MicroflashOS is on the latest version!
+echo [kernel] INFO: version string valid >>"%logfile%"
 
 :: System partition check
 
@@ -186,13 +184,12 @@ echo Loading core modules...
 echo.
 
 for %%C in (%sysModDeps%) do (
-    if exist "%disk0p1%\%%C.mcm" (
-        echo. >>"%devices%\memsect1.bat"
-        type "%disk0p1%\%%C.mcm" >>"%devices%\memsect1.bat"
-        call :loadmodok "/%sysDir%/%%C.mcm"
-    ) else (
+    if not exist "%disk0p1%\%%C.mcm" (
         call :loadmodfail "/%sysDir%/%%C.mcm"
     )
+    echo. >>"%devices%\memsect1.bat"
+    type "%disk0p1%\%%C.mcm" >>"%devices%\memsect1.bat"
+    call :loadmodok "/%sysDir%/%%C.mcm"
 )
 
 if exist "%toggles%\slowboot" (call :slowboot)

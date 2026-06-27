@@ -4,6 +4,7 @@ about: Show some system information
 clock: Get current date and time
 clear: Clear console output
 print [text/filename]: Print something!
+writerecheck [current/home]: Update system write access
 
 Power options:
 

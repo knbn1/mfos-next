@@ -1,4 +1,4 @@
-:: MicroflashOS Developer Tools [devtools.mfm]
+read-only:: MicroflashOS Developer Tools [devtools.mfm]
 
 :mountsys
 title MicroflashOS System Partition Mounter
@@ -29,81 +29,73 @@ dir /a:-d /b "%userMods%\"
 goto :eof
 
 :toggles
-if "%1"=="" (
-    echo Manage your toggles.
-    echo.
-    echo Usage:
-    echo.
-    echo toggles [create/delete/enabled/list] [toggle]
-    echo [toggle-manager] ERROR: no option selected >>"%logfile%"
+for %%A in (create delete enabled list) do (
+    if /I "%~1"=="%%A" (
+        call :users_%%~A "%~2" & goto :eof
+    )
+)
+if not "%~2"=="" (
+    echo Invalid arguments!
+    echo [toggle-manager] ERROR: invalid arguments >>"%logfile%"
     goto :eof
 )
-if "%1"=="create" (
-    if "%2"=="" (
-        echo Please enter a toggle name.
-        echo [toggle-manager] ERROR: no toggle specified >>"%logfile%"
-        goto :eof
-    )
-    echo "%2">"%toggles%\%2"
-    if not exist "%toggles%\%2" (
-        echo Failed to write toggle "%2"!
-        echo [toggle-manager] ERROR: could not write toggle "%2" >>"%logfile%"
-        echo.
-        goto :eof
-    )
-    echo Toggle "%2" written.
-    echo [toggle-manager] INFO: written toggle "%2" >>"%logfile%"
+echo Manage your toggles.
+echo.
+echo Usage:
+echo.
+echo toggles [create/delete/enabled/list] [toggle]
+echo [toggle-manager] ERROR: no option selected >>"%logfile%"
+goto :eof
+
+:toggles_create
+if "%~1"=="" (
+    echo Please enter a toggle name.
+    echo [toggle-manager] ERROR: no toggle specified >>"%logfile%"
     goto :eof
 )
-if "%1"=="delete" (
-    if "%2"=="" (
-        echo Please enter a toggle name.
-        echo [toggle-manager] ERROR: no toggle specified >>"%logfile%"
-        goto :eof
-    )
-    if not exist "%toggles%\%2" (
-        echo Toggle "%2" does not exist!
-        echo [toggle-manager] ERROR: toggle "%2" nonexistent >>"%logfile%"
-        goto :eof
-    )
-    del "%toggles%\%2" /f /q
-    if exist "%toggles%\%2" (
-        echo Failed to delete toggle "%2"!
-        echo [toggle-manager] ERROR: could not delete toggle "%2" >>"%logfile%"
-        goto :eof
-    )
-    echo Toggle "%2" deleted.
-    echo [toggle-manager] INFO: deleted toggle "%2" >>"%logfile%"
+if "%homeWritable%"=="nope" (
+    echo Cannot create toggle while home directory is read-only!
+    echo [toggle-manager] ERROR: cannot create toggle in read-only home directory >>"%logfile%"
+    if exist "%toggles%\noReadOnly" (cmd /k exit)
     goto :eof
 )
-if "%1"=="enabled" (
-    echo Enabled toggles:
-    echo [toggle-manager] INFO: listing enabled toggles... >>"%logfile%"
-    echo.
-    dir /a:-d /b "%toggles%\"
+echo %~1>"%toggles%\%~1"
+echo Toggle "%~1" written.
+echo [toggle-manager] INFO: written toggle "%~1" >>"%logfile%"
+goto :eof
+
+:toggles_delete
+if "%~1"=="" (
+    echo Please enter a toggle name.
+    echo [toggle-manager] ERROR: no toggle specified >>"%logfile%"
     goto :eof
 )
-if "%1"=="list" (
-    echo Toggles in MicroflashOS:
-    echo [toggle-manager] INFO: listing available toggles... >>"%logfile%"
-    echo.
-    echo Tweaks:
-    echo.
-    echo showdir: Shows current directory in command line before prompt
-    echo incognito: Disables writing to the command history file
-	echo allowdisabled: Enables some dangerous/restricted commands.
-    echo.
-    echo Debugging tools:
-    echo.
-    echo slowboot: Add pauses during boot sequence
-    echo echoon: Disables echo OFF so command that generated shell output is shown
-    echo noclear: Disables clearing shell output (this also affects the "clear" command)
-    echo nolog: Disables system logging functions within MicroflashOS
-    echo noReadOnly: Exit upon detecting read-only mode
+if not exist "%toggles%\%~1" (
+    echo Toggle "%~1" does not exist!
+    echo [toggle-manager] ERROR: toggle "%~1" nonexistent >>"%logfile%"
     goto :eof
 )
-echo Invalid arguments!
-echo [toggle-manager] ERROR: invalid arguments >>"%logfile%"
+if "%homeWritable%"=="nope" (
+    echo Cannot delete toggle while home directory is read-only!
+    echo [toggle-manager] ERROR: cannot delete toggle in read-only home directory >>"%logfile%"
+    if exist "%toggles%\noReadOnly" (cmd /k exit)
+    goto :eof
+)
+del "%toggles%\%~1" /f /q
+echo Toggle "%~1" deleted.
+echo [toggle-manager] INFO: deleted toggle "%~1" >>"%logfile%"
+goto :eof
+
+:toggles_enabled
+echo Enabled toggles:
+echo [toggle-manager] INFO: listing enabled toggles... >>"%logfile%"
+echo.
+dir /a:-d /b "%toggles%\"
+goto :eof
+
+:toggles_list
+echo [toggle-manager] INFO: listing available toggles... >>"%logfile%"
+type "%disk0p1%\help\toggles.mhs"
 goto :eof
 
 :getvars

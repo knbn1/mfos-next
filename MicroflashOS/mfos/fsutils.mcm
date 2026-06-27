@@ -139,23 +139,3 @@ echo Changed directory to "%~1"
 echo [fsutils] INFO: changed directory to "%~1" >>"%logfile%"
 echo [fsutils] DEBUG: current path is "%cd%" >>"%logfile%"
 goto :eof
-
-:home
-if not exist "%userDir%" (
-    echo.
-    echo Userdata for current user not found!
-    echo [fsutils] ERROR: could not find userdata for current user >>"%logfile%"
-    goto :eof
-)
-call :checkWritable "%userDir%" "%excludeWriteCheck%" 0
-if ERRORLEVEL 10 (
-    echo Home directory contains read-only subdirectories!
-    echo [fsutils] ERROR: home directory "%userDir%" contains read-only subdirectories >>"%logfile%"
-    goto :eof
-)
-
-cd /d "%userDir%"
-echo Welcome home.
-echo [fsutils] INFO: reverted current path to home directory >>"%logfile%"
-echo [fsutils] DEBUG: current path is "%cd%" >>"%logfile%"
-goto :eof

@@ -105,6 +105,13 @@ if not exist "%userDir%" (
     echo [users] ERROR: could not find userdata for current user >>"%logfile%"
     goto :eof
 )
+call :checkWritable "%userDir%" "%excludeWriteCheck%" 0
+if ERRORLEVEL 10 (
+    echo Home directory contains read-only subdirectories!
+    echo [users] ERROR: home directory "%userDir%" contains read-only subdirectories >>"%logfile%"
+    goto :eof
+)
+
 cd /d "%userDir%"
 echo Welcome home.
 echo [users] INFO: reverted current path to home directory >>"%logfile%"

@@ -6,6 +6,8 @@
 :: Define MicroflashOS Batch file location
 
 set "mfosLocation=%~dp0"
+set "mfosLocation=%mfosLocation:~0,-1%"
+rem Strip the trailing '.' which can cause issues
 
 :: Define version string
 
@@ -32,7 +34,7 @@ title MicroflashOS Bootloader
 
 :: System disk stuffs
 
-set "disk0=%mfosLocation%%disk0Label%"
+set "disk0=%mfosLocation%\%disk0Label%"
 set "disk0p1=%disk0%\%sysDir%"
 set "disk0p2=%disk0%\%userData%"
 
@@ -65,14 +67,14 @@ set "disallowed="
 
 if exist "%toggles%\echoon" (@echo on) else (@echo off)
 if not exist "%toggles%\noclear" (cls)
-if not exist "%toggles%\nolog" (set "logfile=%mfosLocation%mfos-log.txt") else (set "logfile=NUL")
+if not exist "%toggles%\nolog" (set "logfile=%mfosLocation%\mfos-log.txt") else (set "logfile=NUL")
 if not exist "%toggles%\incognito" (set "history=%userDir%/mfos-history.txt") else (set "history=NUL")
 
 :: Flag directory writability
 
-call :checkWritable "%~dp0" "%excludeWriteCheck%" 0 
+call :checkWritable "%mfosLocation%" "%excludeWriteCheck%" 0 
 if ERRORLEVEL 10 (call :writeCheckFail boot)
-set "dirWritable=yessir"
+set "dirWritable=yessir" & set "homeWritable=yessir"
 
 :: Start logging
 

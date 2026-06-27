@@ -28,6 +28,11 @@ set "_dir=" & set "_excludeDirs="
 set "_skip=" & set "depth="
 exit /b
 
+:homeCheckWritable
+call :checkWritable "%mfosLocation%" "%excludeWriteCheck%" 0
+if ERRORLEVEL 10 (set "homeWritable=nope" & goto :eof)
+set "homeWritable=yessir" & goto :eof
+
 :pauseexit
 call :halt
 cmd /k exit

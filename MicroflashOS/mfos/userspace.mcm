@@ -1,94 +1,19 @@
 :users
-
-if "%1"=="create" (
-    if "%2"=="" (
-        echo Please specify a user to create.
-        goto :eof
-    )
-    if not exist "%disk0p2%" (
-        echo Userdata partition not found!
+call :homeCheckWritable
+if not exist "%disk0p2%" (
+    echo Userdata partition not found!
+    if "%homeWritable%"=="nope" (
         echo [users] ERROR: could not load userdata partition >>"%logfile%"
         goto :eof
     )
-    echo [users] INFO: creating user %2 >>"%logfile%"
-    if exist "%disk0p2%\%2" (
-        echo User already exists!
-        echo [users] ERROR: user already exists >>"%logfile%"
-        goto :eof
-    )
-    set "user=%2"
-    echo User will be created on reboot.
-    echo.
-    set "enforcereboot=true"
-    goto :eof
+    echo Creating partition...
+    echo [users] INFO: Created missing userdata partition >>"%logfile%"
+    md "%disk0p2%"
 )
-
-if "%1"=="switch" (
-    if "%2"=="" (
-        echo Please specify a user to switch to.
-        goto :eof
+for %%A in (create switch delete list) do (
+    if /I "%~1"=="%%A" (
+        call :users_%%~A "%~2" & goto :eof
     )
-    if not exist "%disk0p2%" (
-        echo Userdata partition not found!
-        echo [users] ERROR: could not load userdata partition >>"%logfile%"
-        goto :eof
-    )
-    echo [users] INFO: switching to user %2 >>"%logfile%"
-    if not exist "%disk0p2%\%2" (
-        echo User not found!
-        echo [users] ERROR: user not found >>"%logfile%"
-        goto :eof
-    )
-    set "user=%2"
-    echo Rebooting and logging in as %2
-    echo.
-    set "enforcereboot=true"
-    goto :eof
-)
-
-if "%1"=="delete" (
-    if "%2"=="" (
-        echo Please specify a user.
-        goto :eof
-    )
-    if "%user%"=="%2" (
-        echo Cannot delete logged-in user!
-        echo [users] ERROR: cannot delete current user >>"%logfile%"
-        goto :eof
-    )
-    if not exist "%disk0p2%" (
-        echo Userdata partition not found!
-        echo [users] ERROR: could not load userdata partition >>"%logfile%"
-        goto :eof
-    )
-    if not exist "%disk0p2%\%2" (
-        echo User does not exist!
-        goto :eof
-    )
-    echo Deleting user "%2"
-    echo.
-    rd "%disk0p2%\%2" /s /q
-    if exist "%disk0p2%\%2" (
-        echo Deletion failed!
-        echo [users] ERROR: failed to delete user %2 >>"%logfile%"
-        goto :eof
-    )
-    echo Deleted user %2
-    echo [users] INFO: deleted user %2 >>"%logfile%"
-    goto :eof
-)
-
-if "%1"=="list" (
-    if not exist "%disk0p2%" (
-        echo Userdata partition not found!
-        echo [users] ERROR: could not load userdata partition >>"%logfile%"
-        goto :eof
-    )
-    echo Users present:
-    echo.
-    dir "%disk0p2%" /a:d /b
-    echo [users] INFO: listed users >>"%logfile%"
-    goto :eof
 )
 
 echo User management commands.
@@ -96,6 +21,80 @@ echo.
 echo users [create/delete]: Manage users on device
 echo users list: List users present
 echo users switch: Switch to another user
+goto :eof
+
+:users_create
+if "%~1"=="" (
+    echo Please specify a user to create.
+    goto :eof
+)
+if "%homeWritable%"=="nope" (
+    echo Cannot create user while home directory is read-only!
+    echo [users] ERROR: cannot create user in read-only home directory >>"%logfile%"
+    goto :eof
+)
+echo [users] INFO: creating user %~1 >>"%logfile%"
+if exist "%disk0p2%\%~1" (
+    echo User already exists!
+    echo [users] ERROR: user already exists >>"%logfile%"
+    goto :eof
+)
+set "user=%~1"
+echo User will be created on reboot.
+echo.
+set "enforcereboot=true"
+goto :eof
+
+:users_switch
+if "%~1"=="" (
+    echo Please specify a user to switch to.
+    goto :eof
+)
+echo [users] INFO: switching to user %~1 >>"%logfile%"
+if not exist "%disk0p2%\%~1" (
+    echo User not found!
+    echo [users] ERROR: user not found >>"%logfile%"
+    goto :eof
+)
+set "user=%~1"
+echo Rebooting and logging in as %~1
+echo.
+set "enforcereboot=true"
+goto :eof
+
+
+:users_delete
+if "%~1"=="" (
+    echo Please specify a user.
+    goto :eof
+)
+if "%user%"=="%~1" (
+    echo Cannot delete logged-in user!
+    echo [users] ERROR: cannot delete current user >>"%logfile%"
+    goto :eof
+)
+if not exist "%disk0p2%\%~1" (
+    echo User does not exist!
+    goto :eof
+)
+echo Deleting user "%~1"
+echo.
+rd "%disk0p2%\%~1" /s /q
+if exist "%disk0p2%\%~1" (
+    echo Deletion failed!
+    echo [users] ERROR: failed to delete user %~1 >>"%logfile%"
+    goto :eof
+)
+echo Deleted user %~1
+echo [users] INFO: deleted user %~1 >>"%logfile%"
+goto :eof
+
+
+:users_list
+echo Users present:
+echo.
+dir "%disk0p2%" /a:d /b
+echo [users] INFO: listed users >>"%logfile%"
 goto :eof
 
 :home
@@ -107,32 +106,38 @@ if not exist "%userDir%" (
 )
 call :checkWritable "%userDir%" "%excludeWriteCheck%" 0
 if ERRORLEVEL 10 (
-    echo Home directory contains read-only subdirectories!
-    echo [users] ERROR: home directory "%userDir%" contains read-only subdirectories >>"%logfile%"
+    echo User home directory contains read-only subdirectories!
+    echo [users] ERROR: user home directory "%userDir%" contains read-only subdirectories >>"%logfile%"
     goto :eof
 )
 
 cd /d "%userDir%"
 echo Welcome home.
-echo [users] INFO: reverted current path to home directory >>"%logfile%"
+echo [users] INFO: reverted current path to user home directory >>"%logfile%"
 echo [users] DEBUG: current path is "%cd%" >>"%logfile%"
 goto :eof
 
 :homewipe
+call :homeCheckWritable
 echo This command wipes userdata for all users, both logged out and logged in.
 echo This effectively returns MicroflashOS to a "clean" state.
 echo Back up any data before continuing!
 echo.
+if not exist "%disk0p2%" (
+    echo Userdata partition not found. There is nothing to wipe!
+    echo [users] ERROR: could not load userdata partition >>"%logfile%"
+    goto :eof
+)
+if "%homeWritable%"=="nope" (
+    echo Cannot wipe read-only home directory!
+    echo [users] ERROR: could not wipe read-only home directory >>"%logfile%"
+    goto :eof
+)
 call :proctector
 if "%authorized%" NEQ "true" (
     goto :eof
 )
 echo.
-if not exist "%disk0p2%" (
-    echo Userdata partition not found!
-    echo [users] ERROR: could not load userdata partition >>"%logfile%"
-    goto :eof
-)
 echo Found users:
 echo.
 dir /a:d /b "%disk0p2%"
@@ -140,12 +145,6 @@ echo.
 echo Wiping userdata...
 cd /d "%disk0%"
 rd "%userData%" /s /q
-if exist "%disk0p2%" (
-    echo.
-    echo Userdata wipe failed!
-    echo [users] ERROR: userdata partition wipe failed >>"%logfile%"
-    goto :eof
-)
 echo [users] INFO: userdata wipe successful >>"%logfile%"
 echo Wipe succeeded.
 echo.

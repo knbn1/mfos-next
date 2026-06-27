@@ -210,8 +210,7 @@ if not exist "%disk0p2%" (
     echo.
     echo Creating userdata partition...
     echo [kusrinit] INFO: creating userdata partition >>"%logfile%"
-    cd /d "%disk0%"
-    md "%userData%"
+    md "%disk0p2%"
     echo.
 )
 
@@ -225,36 +224,29 @@ if not exist "%userDir%" (
     echo.
     echo Creating userdata for %user%...
     echo [kusrinit] INFO: creating userdata for user %user% >>"%logfile%"
-    cd /d "%disk0p2%"
-    md "%user%"
+    md "%userDir%"
     echo.
 )
 
 if not exist "%userSysDatadir%" (
     echo Setting up userdata for %user%...
     echo [kusrinit] INFO: setting up userdata for %user% >>"%logfile%"
-    cd /d "%userDir%"
     md "%userSysData%"
     echo.
 )
 
-if not exist "%toggles%\" (
+if not exist "%toggles%" (
     echo Creating toggle directory...
     echo [kusrinit] INFO: creating toggle directory for %user% >>"%logfile%"
-    cd /d "%userSysDatadir%"
-    md toggles
+    md "%toggles%"
     echo.
 )
 
-if not exist "%pkgDir%\" (
+if not exist "%pkgDir%" (
     echo Creating package directory...
     echo [kusrinit] INFO: creating package directory for %user% >>"%logfile%"
-    cd /d "%userSysDatadir%"
-    :: Hardcoded package directories...
-    md packages
-    cd /d "%pkgDir%"
-    md installed
-    md help
+    md "%pkgDir%\help"
+    md "%pkgDir%\installed"
     echo.
 )
 

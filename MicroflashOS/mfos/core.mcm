@@ -101,7 +101,7 @@ if exist "%1" (
 	echo [print] INFO: printing contents of file "%1" >>"%logfile%"
 	goto :eof
 )
-echo [print] INFO: user input: "%*" >>""%logfile%"
+echo [print] INFO: user input: "%*" >>"%logfile%"
 echo %*
 goto :eof
 

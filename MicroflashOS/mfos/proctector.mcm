@@ -4,7 +4,7 @@
 set "confirmation="
 set "authorized="
 echo [proctector] INFO: requesting user authorization >>"%logfile%"
-set /p "confirmation=Type "CONFIRM" to authorize this action: "
+set /p "confirmation=Type ""CONFIRM"" to authorize this action: "
 if "%confirmation%"=="CONFIRM" (
     set "confirmation="
     set "authorized=true"

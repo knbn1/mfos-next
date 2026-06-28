@@ -1,8 +1,41 @@
 :: Consolidated commands [compact.mcm]
 
+::%1=dir, %2=excludeDirs, %3=depthCount || %4=tmpFilename
+::ERRORLEVELs: 10=read-only, 3=depth exceeded, 2=skipped
+:checkWritable
+if "%~1"=="" (exit /b 0)
+
+set /a "recurseLimit=100"
+if %3 GEQ %recurseLimit% (exit /b 3)
+set /a "depth=%3 +1"
+
+set "_dir=%~nx1" & set "_excludeDirs=%~2"
+call set "_skipThis=%%excludeDirs:%dir%=%%"
+if not "%_skipThis%"=="%_excludeDirs%" (exit /b 2)
+
+rem Current level check
+type nul > "%~f1\%4.tmp"
+if not exist "%~f1\%4.tmp" (exit /b 10)
+del "%~f1\%4.tmp"
+
+rem Check subdirectories
+for /d %%Z in ("%~f1\*") do (
+    call :checkWritable "%%~fZ" "%~2" %depth%
+    if ERRORLEVEL 10 (exit /b 10)
+)
+
+set "_dir=" & set "_excludeDirs="
+set "_skip=" & set "depth="
+exit /b
+
+:homeCheckWritable
+call :checkWritable "%mfosLocation%" "%excludeWriteCheck%" 0
+if ERRORLEVEL 10 (set "homeWritable=nope" & goto :eof)
+set "homeWritable=yessir" & goto :eof
+
 :pauseexit
 call :halt
-exit
+cmd /k exit
 
 :halt
 echo.

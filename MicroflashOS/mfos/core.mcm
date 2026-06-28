@@ -41,6 +41,48 @@ goto :eof
 set "enforcereboot=true"
 goto :eof
 
+:writerecheck
+for %%A in (current home) do (
+    if /I "%~1"=="%%A" (
+        call :writerecheck_%%~A & goto :eof
+    )
+)
+echo Check and update write access.
+echo.
+echo writerecheck current: check current directory (normal/read-only mode)
+echo writerecheck home: check home directory (system and user)
+goto :eof
+
+:writerecheck_current
+call :checkWritable "%CD%" "%excludeWriteCheck%" 0
+if ERRORLEVEL 10 (
+	echo WARNING: Current directory contains read-only directories!
+	echo [chkwrite] WARN: Current directory "%CD%" contains read-only directories >>"%logfile%"
+	if exist "%toggles%\noReadOnly" (cmd /k exit)
+	
+	echo WARNING: You are in read-only mode.
+    echo [chkwrite] WARN: Read-only mode enabled >>"%logfile%"
+    set "dirWritable=nope"
+	goto :eof
+)
+echo You are in normal mode. Write access enabled.
+echo [chkwrite] INFO: running in normal mode - write access enabled >>"%logfile%"
+set "dirWritable=yessir"
+goto :eof
+
+:writerecheck_home
+call :homeCheckWritable
+if ERRORLEVEL 10 (
+	echo WARNING: Home directory contains read-only directories!
+	echo System likely to be unstable and produce unpredictable behavior!
+	echo [chkwrite] WARN: Home directory "%mfosLocation" contains read-only directories >>"%logfile%"
+	if exist "%toggles%\noReadOnly" (cmd /k exit)
+	goto :eof
+)
+echo Home directory has full write access.
+echo [chkwrite] INFO: write access enabled for home directory >>"%logfile%"
+goto :eof
+
 :shutdown
 title Shutting down...
 echo Shutting down...

@@ -111,7 +111,7 @@ goto :eof
 
 :cd
 if "%~1"=="" (
-    echo This command is used change your current directory.
+    echo This command is used to change your current directory.
     echo.
     echo Usage:
     echo.

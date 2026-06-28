@@ -33,7 +33,6 @@ echo [cmd] INFO: command valid >>"%logfile%"
 set "blocked="
 if not "%disallowed%"=="" (call set "blocked=%%disallowed:%command%=%%")
 if not "%blocked%"=="%disallowed%" if not exist "%toggles%\allowdisabled" (
-    echo %blocked%...%disallowed%
     set "blocked="
     echo [cmd] ERROR: command disabled >>"%logfile%"
     echo.

@@ -49,8 +49,8 @@ for %%A in (current home) do (
 )
 echo Check and update write access.
 echo.
-echo writerecheck current: -of the current directory (normal/read-only mode)
-echo writerecheck home: -of the home directory (system and user)
+echo writerecheck current: check current directory (normal/read-only mode)
+echo writerecheck home: check home directory (system and user)
 goto :eof
 
 :writerecheck_current

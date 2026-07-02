@@ -11,7 +11,7 @@ rem Strip the trailing '.' which can cause issues
 
 :: Define version string
 
-set "mfosVer=2026.06.17"
+set "mfosVer=2026.07.02"
 
 :: Define default directories
 
@@ -60,7 +60,7 @@ set "userModsAllowed="
 
 :: Whitelisted and blacklisted commands
 
-set "cmdlist=about help clock print clear reboot writeRecheck shutdown mkdir rename delete list cd home homewipe neopkg mountsys modules toggles getvars users"
+set "cmdlist=about help clock print clear reboot writerecheck shutdown mkdir rename delete list cd home homewipe neopkg mountsys modules toggles getvars users"
 set "disallowed="
 
 :: Startup parameters

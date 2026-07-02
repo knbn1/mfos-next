@@ -15,5 +15,7 @@ Please read the [disclaimer](https://github.com/knbn1/mfos-next/wiki#disclaimer)
 
 For more information, turn to [the wiki](https://github.com/knbn1/mfos-next/wiki).
 
+You can find the package list [here](https://github.com/knbn1/mfos-next-packages)
+
 `Code is licensed under the AGPL-3.0 license.`
 

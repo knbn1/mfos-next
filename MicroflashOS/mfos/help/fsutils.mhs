@@ -9,4 +9,4 @@ cd [path]: Change to a directory
 User management:
 
 home: Quickly return to user directory
-homewipe: Wipe all user directories
+homewipe: Wipe all userdata

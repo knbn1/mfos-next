@@ -2,14 +2,14 @@ Toggles in MicroflashOS:
 
 Tweaks:
 
-showdir: Shows current directory in command line before prompt
+showDir: Shows current directory in command line before prompt
 incognito: Disables writing to the command history file
-allowdisabled: Enables some dangerous/restricted commands.
+allowDisabled: Enables some dangerous/restricted command
 
 Debugging tools:
 
-slowboot: Add pauses during boot sequence
-echoon: Disables OFF so command that generated shell output is shown
-noclear: Disables clearing shell output (this also affects the "clear" command)
-nolog: Disables system logging functions within MicroflashOS
+slowBoot: Add pauses during boot sequence
+echoOn: Disables OFF so command that generated shell output is shown
+noClear: Disables clearing shell output (this also affects the "clear" command)
+noLog: Disables system logging functions within MicroflashOS
 noReadOnly: Exit upon detecting read-only mode

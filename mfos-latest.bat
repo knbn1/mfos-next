@@ -51,7 +51,7 @@ set "pkgDir=%userSysDatadir%\packages"
 set "pkgMeta=%pkgDir%\installed"
 set "pkgHelp=%disk0p1%\help"
 
-set "excludeWriteCheck=.git"
+set "excludeWriteCheck="
 
 :: Modules loaded as part of the boot process
 

@@ -2,5 +2,7 @@ Developer commands:
 
 mountsys: Mount and modify system disk contents
 modules: List all core and user modules
-toggles [create/delete/enabled/list] [toggle]: Manage toggles
-getvars: Print a list of all environment variables accessible
+toggles [create/delete] [toggle]: Manage toggles
+toggles enabled: List enabled toggles
+toggles list: List available toggles
+getvars: Print all environment variables accessible

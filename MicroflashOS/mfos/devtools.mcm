@@ -1,4 +1,4 @@
-read-only:: MicroflashOS Developer Tools [devtools.mfm]
+:: MicroflashOS Developer Tools [devtools.mfm]
 
 :mountsys
 title MicroflashOS System Partition Mounter
@@ -100,7 +100,7 @@ goto :eof
 
 :toggles_list
 echo [toggle-manager] INFO: listing available toggles... >>"%logfile%"
-type "%disk0p1%\help\toggles.txt"
+type "%pkgHelp%\toggles.txt"
 goto :eof
 
 :getvars

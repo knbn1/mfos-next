@@ -6,8 +6,10 @@
 :: Define MicroflashOS Batch file location
 
 set "mfosLocation=%~dp0"
+
+:: Strip the trailing '.' which can cause issues
+
 set "mfosLocation=%mfosLocation:~0,-1%"
-rem Strip the trailing '.' which can cause issues
 
 :: Define version string
 
@@ -49,14 +51,18 @@ set "toggles=%userSysDatadir%\toggles"
 set "userMods=%userSysDatadir%\%modsDir%"
 set "pkgDir=%userSysDatadir%\packages"
 set "pkgMeta=%pkgDir%\installed"
-set "pkgHelp=%disk0p1%\help"
+set "pkgHelp=%disk0p1%\docs"
 
 set "excludeWriteCheck="
 
 :: Modules loaded as part of the boot process
 
 set "sysModDeps=cmd core fsutils compact proctector neopkg devtools userspace"
+
+:: Specify which user modules to load with usermods.txt
+
 set "userModsAllowed="
+if exist usermods.txt (set /p userModsAllowed=<"usermods.txt")
 
 :: Whitelisted and blacklisted commands
 

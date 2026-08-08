@@ -13,7 +13,7 @@ set "mfosLocation=%mfosLocation:~0,-1%"
 
 :: Define version string
 
-set "mfosVer=2026.07.02"
+set "mfosVer=2026.08.08"
 
 :: Define default directories
 
@@ -53,7 +53,7 @@ set "pkgDir=%userSysDatadir%\packages"
 set "pkgMeta=%pkgDir%\installed"
 set "pkgHelp=%disk0p1%\docs"
 
-set "excludeWriteCheck="
+set "excludeWriteCheck=.git"
 
 :: Modules loaded as part of the boot process
 
@@ -222,6 +222,7 @@ if not exist "%disk0p2%" (
 :: the bare minimum to get stuff to work
 :: if mfos breaks you will need to download the latest system disks from github
 rem Don't worry, It can't break with my new writability check
+:: fuck you nightlydevice
 
 if not exist "%userDir%" (
     echo Userdata for user %user% not found!
@@ -265,12 +266,19 @@ if not exist "%userMods%\" (
 
 :: Load user modules
 
-for %%U in (%userModsAllowed%) do (
-    if exist "%userMods%\%%U.mfm" (
-        echo.
-        echo. >>"%devices%\memsect1.bat"
-        type "%userMods%\%%U.mfm" >>"%devices%\memsect1.bat"
-        call :loadmodok %%U.mfm
+if "%userModsAllowed%"=="" (
+    echo No user modules to load, skipping...
+    echo [kusrinit] INFO: no user modules were whitelisted, skipping... >>"%logfile%"
+) else (
+    title Loading user modules...
+    echo Loading user modules...
+    echo.
+    for %%U in (%userModsAllowed%) do (
+        if exist "%userMods%\%%U.mfm" (
+            echo. >>"%devices%\memsect1.bat"
+            type "%userMods%\%%U.mfm" >>"%devices%\memsect1.bat"
+            call :loadmodok %%U.mfm
+        )
     )
 )
 

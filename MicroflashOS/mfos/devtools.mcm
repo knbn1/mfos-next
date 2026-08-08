@@ -18,14 +18,22 @@ echo Use with caution!
 goto :eof
 
 :modules
-echo [modules] INFO: listing installed modules... >>"%logfile%"
+echo [modules] INFO: listing loaded modules... >>"%logfile%"
 echo Core modules:
 echo.
-dir /a:-d /b "%disk0p1%\"
-echo.
-echo User modules:
-echo.
-dir /a:-d /b "%userMods%\"
+for %%C in (%sysModDeps%) do (
+    echo %%C
+    echo [modules] INFO: sysmod %%C >>"%logfile%"
+)
+if not "%userModsAllowed%"=="" (
+    echo.
+    echo User modules:
+    echo.
+    for %%C in (%userModsAllowed%) do (
+        echo %%C
+        echo [modules] INFO: usrmod %%C >>"%logfile%"
+    )
+)
 goto :eof
 
 :toggles

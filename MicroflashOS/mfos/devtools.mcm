@@ -112,6 +112,9 @@ type "%pkgHelp%\toggles.txt"
 goto :eof
 
 :getvars
-echo.
 set
+goto :eof
+
+:lasterr
+echo %ERRORLEVEL%
 goto :eof

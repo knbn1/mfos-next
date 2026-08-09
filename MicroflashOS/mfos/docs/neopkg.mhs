@@ -1,7 +1,8 @@
 Package management:
 
-neopkg [install/uninstall] [package]: Manage a package
-neopkg list: List installed packages
-neopkg info [package]: Get metadata for a package
-neopkg available: Download a list of packages to install
-neopkg clear-cache: Clears the executable cache used by neopkg run
+echo neopkg [install/uninstall] [package]: Manage packages
+echo neopkg run: Execute a package
+echo neopkg list: List installed packages
+echo neopkg info [package]: Get metadata for a package
+echo neopkg available: Download a list of packages to install
+echo neopkg clear-cache: Clears the executable cache used by neopkg run

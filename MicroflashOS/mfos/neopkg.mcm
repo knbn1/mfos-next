@@ -2,6 +2,7 @@
 :: Some code borrowed from the MicroflashOS Updater by nightlydevice and nglammm
 
 :neopkg
+
 call :homeCheckWritable
 for %%A in (install uninstall info list run clear-cache available) do (
     if /I "%~1"=="%%A" (
@@ -11,7 +12,8 @@ for %%A in (install uninstall info list run clear-cache available) do (
 
 echo MicroflashOS Next Package Manager (neopkg)
 echo.
-echo neopkg [install/uninstall] [package]: Manage a package.
+echo neopkg [install/uninstall] [package]: Manage packages
+echo neopkg run: Execute a package
 echo neopkg list: List installed packages
 echo neopkg info [package]: Get metadata for a package
 echo neopkg available: Download a list of packages to install

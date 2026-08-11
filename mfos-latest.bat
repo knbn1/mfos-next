@@ -13,7 +13,7 @@ set "mfosLocation=%mfosLocation:~0,-1%"
 
 :: Define version string
 
-set "mfosVer=2026.08.09"
+set "mfosVer=2026.08.11"
 
 :: Define default directories
 
@@ -97,7 +97,6 @@ if exist "%toggles%\slowboot" (call :slowboot)
 
 echo [bootloader] INFO: loading bundled kernel into memory... >>"%logfile%"
 echo [kernel] INFO: hello world, my version is %mfosVer% >>"%logfile%"
-echo [kernel] INFO: terminating bootloader... done >>"%logfile%"
 echo.
 
 :: System disk check

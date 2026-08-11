@@ -37,8 +37,6 @@ if "%found%"=="nope" (
     goto :eof
 )
 
-echo [cmd] INFO: command valid >>"%logfile%"
-
 :: check blacklist
 set "blocked="
 if not "%disallowed%"=="" (call set "blocked=%%disallowed:%command%=%%")
@@ -52,6 +50,8 @@ if not "%blocked%"=="%disallowed%" if not exist "%toggles%\allowdisabled" (
 )
 
 if not exist "%toggles%\incognito" (echo [valid] "%input%" >>"%history%")
+echo [cmd] INFO: command valid >>"%logfile%"
+
 echo.
 title %command%
 call :%input%

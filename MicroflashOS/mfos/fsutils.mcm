@@ -26,6 +26,19 @@ echo Created directory "%~1"
 echo [fsutils] INFO: created directory "%~1" >>"%logfile%"
 goto :eof
 
+:mkfile
+title File Manager
+set /p "mkf_name=File name: "
+echo.
+set /p "mkf_contents=File contents: "
+echo.
+echo %mkf_contents%>"%mkf_name%"
+if not exist "%mkf_name%" (echo File creation failed! && echo [fsutils] ERROR: could not create file "%mkf_name%" >> "%logfile%" && goto :eof)
+echo File created.
+echo [fsutils] INFO: created file "%mkf_name%" >> "%logfile%"
+echo [cmd] INFO: command execution complete >> "%logfile%"
+goto :eof
+
 :rename
 if "%~1"=="" (
     echo This command renames a file or a folder.

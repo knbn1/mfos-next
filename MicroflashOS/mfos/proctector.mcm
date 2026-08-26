@@ -17,4 +17,3 @@ echo.
 echo User authorization failed!
 echo [kernel] ERROR: user authorization failed >> "%logfile%"
 goto :eof
-

@@ -1,0 +1,5 @@
+core=about help clock print clear reboot writerecheck shutdown
+fsutils=mkdir mkfile rename delete list cd 
+userspace=users home homewipe
+neopkg=neopkg
+devtools=mountsys modules toggles getvars

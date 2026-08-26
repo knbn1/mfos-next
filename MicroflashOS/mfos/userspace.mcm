@@ -1,3 +1,5 @@
+:: MicroflashOS User Management [userspace.mcm]
+
 :users
 call :homeCheckWritable
 if not exist "%disk0p2%" (

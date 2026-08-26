@@ -57,17 +57,16 @@ set "excludeWriteCheck=.git"
 
 :: Modules loaded as part of the boot process
 
-set "sysModDeps=cmd core fsutils compact proctector neopkg devtools userspace"
+set "sysModInternal=cmd compact proctector"
 
 :: Specify which user modules to load with usermods.txt
 
 set "userModsAllowed="
 if exist usermods.txt (set /p userModsAllowed=<"usermods.txt")
 
-:: Whitelisted and blacklisted commands
+:: Blacklisted commands
 
-set "cmdlist=about help clock print clear reboot writerecheck shutdown mkdir mkfile rename delete list cd home homewipe neopkg mountsys modules toggles getvars users"
-set "disallowed=mkfile"
+set "disallowed="
 
 :: Startup parameters
 
@@ -161,7 +160,11 @@ echo [kdevinit] INFO: found help sections directory in disk0p1 >>"%logfile%"
 echo System partition > "%devices%\disk0p1"
 call :devinitok disk0p1
 
-echo ^:^: Memory Sector 1 >"%devices%\memsect1.bat"
+type nul >"%devices%\memsect0.bat"
+echo [kdevinit] INFO: generated memsect0 >>"%logfile%"
+call :devinitok memsect0
+
+type nul >"%devices%\memsect1.bat"
 echo [kdevinit] INFO: generated memsect1 >>"%logfile%"
 call :devinitok memsect1
 
@@ -188,14 +191,16 @@ title Loading core modules...
 echo Loading core modules...
 echo.
 
-for %%C in (%sysModDeps%) do (
+for %%C in (%sysModInternal%) do (
     if not exist "%disk0p1%\%%C.mcm" (
         call :loadmodfail "/%sysDir%/%%C.mcm"
     )
-    echo. >>"%devices%\memsect1.bat"
-    type "%disk0p1%\%%C.mcm" >>"%devices%\memsect1.bat"
+    (   type "%disk0p1%\%%C.mcm"
+        echo.
+    ) >>"%devices%\memsect0.bat"
     call :loadmodok "/%sysDir%/%%C.mcm"
 )
+copy "%devices%\memsect0.bat" "%devices%\memsect1.bat" /V /Y
 
 if exist "%toggles%\slowboot" (call :slowboot)
 
@@ -265,20 +270,21 @@ if not exist "%userMods%\" (
 
 :: Load user modules
 
-if "%userModsAllowed%"=="" (
-    echo No user modules to load, skipping...
-    echo [kusrinit] INFO: no user modules were whitelisted, skipping... >>"%logfile%"
-) else (
+if not "%userModsAllowed%"=="" (
     title Loading user modules...
     echo Loading user modules...
     echo.
     for %%U in (%userModsAllowed%) do (
         if exist "%userMods%\%%U.mfm" (
-            echo. >>"%devices%\memsect1.bat"
-            type "%userMods%\%%U.mfm" >>"%devices%\memsect1.bat"
+            (   echo.
+                type "%userMods%\%%U.mfm" 
+            ) >>"%devices%\memsect0.bat"
             call :loadmodok %%U.mfm
         )
     )
+) else (
+    echo No user modules to load, skipping...
+    echo [kusrinit] INFO: no user modules were whitelisted, skipping... >>"%logfile%"
 )
 
 :: Once finished make a device for disk0p2 aka userdata
@@ -338,11 +344,72 @@ if exist "%toggles%\showdir" (
     echo.
 )
 
-:: Immediately jump to memsect1 to parse commands
-:: Potential scripting support soon??
+set "input="
+set "command="
 
-call "%devices%\memsect1.bat" :parser
+echo [cmd] INFO: load user prompt >>"%logfile%"
+echo [cmd] INFO: waiting for user input >>"%logfile%"
+echo.
+set /p "input=%user%@%userdomain%: "
+
+title Processing command...
+echo [cmd] INFO: received command "%input%" >>"%logfile%"
+
+if "%input%"=="" (
+    echo.
+    echo Don't you dare.
+    echo [cmd] ERROR: input empty >>"%logfile%"
+    goto :eof
+)
+for /f "tokens=1,* delims= " %%a in ("%input%") do (
+    set "command=%%a" & set "args=%%b"
+)
+
+echo [cmd] DEBUG: extracted main command "%command%" >>"%logfile%"
+echo [cmd] DEBUG: extracted arguments "%args%" >>"%logfile%"
+
+:: check blacklist
+set "blocked="
+if not "%disallowed%"=="" (call set "blocked=%%disallowed:%command%=%%")
+if not "%blocked%"=="%disallowed%" if not exist "%toggles%\allowdisabled" (
+    set "blocked="
+    echo [cmd] ERROR: command disabled >>"%logfile%"
+    echo.
+    echo This command has been disabled.
+    echo Create "allowdisabled" toggle to bypass this.
+    goto :eof
+)
+
+echo [cmd] DEBUG: checking "%command%" against whitelist >>"%logfile%"
+set "cmdModule=NOTFOUND"
+for /f "tokens=1,* delims==" %%V in (%disk0p1%\cmdlist.txt) do (
+    for %%M in (%%W) do (
+        if /i "%command%"=="%%M" (set "cmdModule=%%V")
+    )
+)
+if "%cmdModule%"=="NOTFOUND" (
+    echo.
+    echo Invalid command.
+    if not exist "%toggles%\incognito" (echo [invalid] "%input%" >>"%history%")
+    echo [cmd] ERROR: command "%input%" invalid >>"%logfile%"
+    goto :eof
+)
+
+if not exist "%toggles%\incognito" (echo [valid] "%input%" >>"%history%")
+echo [cmd] INFO: command valid >>"%logfile%"
+
+echo.
+(   type "%devices%\memsect0.bat"
+    echo.
+    echo ^:^: Memory Sector 1
+    type "%disk0p1%\%cmdModule%.mcm"
+) >"%devices%\memsect1.bat"
+
+call "%devices%\memsect1.bat" "%command%" "%args%"
+
+copy "%devices%\memsect0.bat" "%devices%\memsect1.bat" /V /Y
 goto prompt
+
 
 :: Consolidations
 

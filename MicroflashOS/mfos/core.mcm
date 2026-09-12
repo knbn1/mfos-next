@@ -34,6 +34,9 @@ echo [about] INFO: processor is %processor_identifier% with %NUMBER_OF_PROCESSOR
 echo Architecture: %processor_architecture%
 echo [about] INFO: architecture is %processor_architecture% >>"%logfile%"
 echo.
+echo Logged in as %user%
+echo [about] INFO: logged in as %user% >>"%logfile%"
+echo.
 echo Made by Kenneth White.
 goto :eof
 

@@ -46,10 +46,10 @@ set "devices=%disk0p1%\devices"
 set "exeCache=%devices%\memsect2\execache"
 
 set "userDir=%disk0p2%\%user%"
-set "userSysDatadir=%userDir%\%userSysData%"
-set "toggles=%userSysDatadir%\toggles"
-set "userMods=%userSysDatadir%\%modsDir%"
-set "pkgDir=%userSysDatadir%\packages"
+set "userSysDataDir=%userDir%\%userSysData%"
+set "toggles=%userSysDataDir%\toggles"
+set "userMods=%userSysDataDir%\%modsDir%"
+set "pkgDir=%userSysDataDir%\packages"
 set "pkgMeta=%pkgDir%\installed"
 set "pkgHelp=%disk0p1%\docs"
 
@@ -233,10 +233,10 @@ if not exist "%userDir%" (
     echo.
 )
 
-if not exist "%userSysDatadir%" (
+if not exist "%userSysDataDir%" (
     echo Setting up userdata for %user%...
     echo [kusrinit] INFO: setting up userdata for %user% >>"%logfile%"
-    md "%userSysData%"
+    md "%userSysDataDir%"
     echo.
 )
 
@@ -258,7 +258,7 @@ if not exist "%pkgDir%" (
 if not exist "%userMods%\" (
     echo Creating module directory...
     echo [kusrinit] INFO: creating module directory for %user% >>"%logfile%"
-    cd /d "%userSysDatadir%"
+    cd /d "%userSysDataDir%"
     md %modsDir%
     echo.
 )

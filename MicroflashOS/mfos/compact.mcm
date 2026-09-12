@@ -1,4 +1,4 @@
-:: Consolidated commands [compact.mcm]
+:: MicroflashOS Next Consolidated Commands [compact.mcm]
 
 ::%1=dir, %2=excludeDirs, %3=depthCount || %4=tmpFilename
 ::ERRORLEVELs: 10=read-only, 3=depth exceeded, 2=skipped

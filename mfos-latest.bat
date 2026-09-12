@@ -1,4 +1,4 @@
-:: Source code of MicroflashOS Next
+:: MicroflashOS Next Bootloader
 :: A "fantasy operating system" made by KNBnoob1!
 :: Project source: https://github.com/knbn1/mfos-next
 :: Contributors: nightlydevice, nglammm, justapawsibility

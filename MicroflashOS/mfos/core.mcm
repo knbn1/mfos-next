@@ -1,4 +1,4 @@
-:: MicroflashOS Core Utilities [core.mcm]
+:: MicroflashOS Next Core Utilities [core.mcm]
 
 :help
 :: the cd commands are so the log messages don't get blown up with paths

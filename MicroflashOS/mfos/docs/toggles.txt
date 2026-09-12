@@ -4,7 +4,7 @@ Tweaks:
 
 showDir: Shows current directory in command line before prompt
 incognito: Disables writing to the command history file
-allowDisabled: Enables some dangerous/restricted command
+allowDisabled: Enables restricted commands
 
 Debugging tools:
 

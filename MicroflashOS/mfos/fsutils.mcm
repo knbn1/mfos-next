@@ -1,4 +1,4 @@
-:: MicroflashOS Filesystem Toolkit [fsutils.mcm]
+:: MicroflashOS Next Filesystem Toolkit [fsutils.mcm]
 
 :mkdir
 if "%~1"=="" (

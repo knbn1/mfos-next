@@ -13,7 +13,7 @@ set "mfosLocation=%mfosLocation:~0,-1%"
 
 :: Define version string
 
-set "mfosVer=2026.09.12"
+set "mfosVer=2026.10.14"
 
 :: Define default directories
 
@@ -45,6 +45,8 @@ set "disk0p2=%disk0%\%userData%"
 set "devices=%disk0p1%\devices"
 set "exeCache=%devices%\memsect2\execache"
 
+set "sysMods=%disk0p1%\sysmodules"
+
 set "userDir=%disk0p2%\%user%"
 set "userSysDataDir=%userDir%\%userSysData%"
 set "toggles=%userSysDataDir%\toggles"
@@ -68,6 +70,11 @@ if exist usermods.txt (set /p userModsAllowed=<"usermods.txt")
 
 set "cmdlist=about help clock print clear reboot writerecheck shutdown mkdir mkfile rename delete list cd home homewipe neopkg mountsys modules toggles getvars users"
 set "disallowed=mkfile"
+
+:: MicroflashOS Package Repository default URLs
+
+set "pkgSource=https://raw.githubusercontent.com/knbn1/mfos-next-packages/refs/heads/main"
+set "listSource=https://raw.githubusercontent.com/knbn1/mfos-next-packages/refs/heads/main/stuffs/remote-packages.txt"
 
 :: Startup parameters
 
@@ -183,18 +190,25 @@ if exist "%toggles%\slowboot" (call :slowboot)
 
 echo [kernel] INFO: begin boot process stage 2 >>"%logfile%"
 
+if not exist "%sysMods%" (
+    echo.
+    echo System module directory not found...
+    echo [kmodsinit] ERROR: sysmodule directory not found >>"%logfile%"
+    goto bootfail
+)
+
 echo.
 title Loading core modules...
 echo Loading core modules...
 echo.
 
 for %%C in (%sysModDeps%) do (
-    if not exist "%disk0p1%\%%C.mcm" (
-        call :loadmodfail "/%sysDir%/%%C.mcm"
+    if not exist "%sysMods%\%%C.mcm" (
+        call :loadmodfail "%%C.mcm"
     )
     echo. >>"%devices%\memsect1.bat"
-    type "%disk0p1%\%%C.mcm" >>"%devices%\memsect1.bat"
-    call :loadmodok "/%sysDir%/%%C.mcm"
+    type "%sysMods%\%%C.mcm" >>"%devices%\memsect1.bat"
+    call :loadmodok "%%C.mcm"
 )
 
 if exist "%toggles%\slowboot" (call :slowboot)

@@ -4,7 +4,7 @@
 :neopkg
 
 call :homeCheckWritable
-for %%A in (install uninstall info list run clear-cache available) do (
+for %%A in (install uninstall info list run clear-cache available source) do (
     if /I "%~1"=="%%A" (
         call :neopkg_%%~A "%~2" & goto :eof
     )
@@ -28,6 +28,9 @@ goto :eof
 
 :neopkg_source
 if "%~1"=="set" (
+    :: wipe existing variables
+    set "pkgSource="
+    set "listSource="
     echo Enter a source to download packages from.
     echo Truncate the end slash "/" from your URL.
     echo.
@@ -52,7 +55,7 @@ if "%~1"=="set" (
         set "pkgSource=https://raw.githubusercontent.com/knbn1/mfos-next-packages/refs/heads/main"
         goto :eof
     )
-    echo [neopkg] set package source to "%pkgSource%" >>"%logFile%"
+    echo [neopkg] INFO: set package source to "%pkgSource%" >>"%logFile%"
     echo Enter a source for the package list.
     echo It must lead to a .txt file.
     echo.
@@ -66,7 +69,7 @@ if "%~1"=="set" (
         set "listSource=https://raw.githubusercontent.com/knbn1/mfos-next-packages/refs/heads/main/stuffs/remote-packages.txt"
         goto :eof
     )
-    echo [neopkg] set list source to "%listSource%" >>"%logFile%"
+    echo [neopkg] INFO: set list source to "%listSource%" >>"%logFile%"
     echo Changed sources.
     goto :eof
 )
@@ -85,7 +88,6 @@ if "%~1"=="" (
     echo Set a custom source to download packages and metadata.
     echo.
     echo neopkg source [set/reset]
-    echo.
     goto :eof
 )
 

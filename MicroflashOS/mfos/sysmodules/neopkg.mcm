@@ -75,7 +75,6 @@ if "%~1"=="set" (
 )
 if "%~1"=="reset" (
     echo Reverting to default mfos-next-packages repository.
-    echo.
     set "pkgSource=https://raw.githubusercontent.com/knbn1/mfos-next-packages/refs/heads/main"
     set "listSource=https://raw.githubusercontent.com/knbn1/mfos-next-packages/refs/heads/main/stuffs/remote-packages.txt"
     echo [neopkg] INFO: revert to default mfos-next-packages source >>"%logFile%"

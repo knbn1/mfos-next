@@ -1,4 +1,4 @@
-User management commands.
+User management commands:
 
 users [create/delete]: Manage users on device
 users list: List users present

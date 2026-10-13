@@ -46,6 +46,10 @@ if "%~1"=="set" (
     echo.
     if "%pkgSource%"=="" (
         echo URL cannot be empty!
+        echo [neopkg] ERROR: url empty >>"%logfile%"
+        echo.
+        echo Reverting to default URL.
+        set "pkgSource=https://raw.githubusercontent.com/knbn1/mfos-next-packages/refs/heads/main"
         goto :eof
     )
     echo [neopkg] set package source to "%pkgSource%" >>"%logFile%"
@@ -56,6 +60,10 @@ if "%~1"=="set" (
     echo.
     if "%listSource%"=="" (
         echo URL cannot be empty!
+        echo [neopkg] ERROR: url empty >>"%logfile%"
+        echo.
+        echo Reverting to default URL.
+        set "listSource=https://raw.githubusercontent.com/knbn1/mfos-next-packages/refs/heads/main/stuffs/remote-packages.txt"
         goto :eof
     )
     echo [neopkg] set list source to "%listSource%" >>"%logFile%"
@@ -67,9 +75,17 @@ if "%~1"=="reset" (
     echo.
     set "pkgSource=https://raw.githubusercontent.com/knbn1/mfos-next-packages/refs/heads/main"
     set "listSource=https://raw.githubusercontent.com/knbn1/mfos-next-packages/refs/heads/main/stuffs/remote-packages.txt"
-    echo [neopkg] revert to default mfos-next-packages source >>"%logFile%"
+    echo [neopkg] INFO: revert to default mfos-next-packages source >>"%logFile%"
     echo.
     echo https://github.com/knbn1/mfos-next-packages
+    goto :eof
+)
+if "%~1"=="" (
+    echo [neopkg] ERROR: no options selected >>"%logFile%"
+    echo Set a custom source to download packages and metadata.
+    echo.
+    echo neopkg source [set/reset]
+    echo.
     goto :eof
 )
 

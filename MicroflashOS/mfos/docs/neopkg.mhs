@@ -1,4 +1,4 @@
-Package Management:
+Package management:
 
 neopkg [install/uninstall] [package]: Manage packages
 neopkg run: Execute a package

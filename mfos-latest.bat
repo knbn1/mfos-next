@@ -68,8 +68,7 @@ if exist usermods.txt (set /p userModsAllowed=<"usermods.txt")
 
 :: Whitelisted and blacklisted commands
 
-set "cmdlist=about help clock print clear reboot writerecheck shutdown mkdir mkfile rename delete list cd home homewipe neopkg mountsys modules toggles getvars users"
-set "disallowed=mkfile"
+set "cmdlist=about help clock print clear reboot writerecheck shutdown mkdir mktext rename delete list cd home homewipe neopkg mountsys modules toggles getvars users"
 
 :: MicroflashOS Package Repository default URLs
 
@@ -321,10 +320,15 @@ echo [cmd] INFO: initialized prompt >>"%logfile%"
 echo.
 echo Logged in as %user%
 echo [cmd] INFO: current user: %user% >>"%logfile%"
-echo.
-echo Type HELP for a list of commands.
-echo Commands are not case-sensitive.
 
+:: Message of the Day
+if exist "%userDir%\motd" (
+	if not exist "%toggles%\nomotd" (
+		echo.
+		type "%userDir%\motd"
+		echo.
+	)
+)
 :: User prompt
 
 :prompt

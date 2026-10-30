@@ -1,6 +1,7 @@
 File management:
 
 mkdir [directory]: Create a directory
+mktext [filename]: Create a text file
 rename [target] [new name] Rename something to another thing
 delete [file/directory] [name]: Delete a file/directory
 list: List available files/directories

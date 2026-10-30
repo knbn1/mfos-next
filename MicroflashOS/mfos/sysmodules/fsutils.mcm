@@ -1,7 +1,8 @@
 :: MicroflashOS Next Filesystem Toolkit [fsutils.mcm]
 
 :mkdir
-if "%~1"=="" (
+title File Manager
+if "%1"=="" (
     echo This command is used to make a directory.
     echo.
     echo Usage:
@@ -11,36 +12,43 @@ if "%~1"=="" (
     goto :eof
 )
 if "%dirWritable%"=="nope" (
-    echo Read-only: Failed to create directory "%~1"!
-    echo [fsutils] ERROR: failed to create directory "%~1", is the directory read-only? >>"%logfile%"
+    echo Read-only: Failed to create directory "%1"!
+    echo [fsutils] ERROR: failed to create directory "%1", is the directory read-only? >>"%logfile%"
     if exist "%toggles%\noReadOnly" (cmd /k exit)
     goto :eof
 )
-if exist "%~1" (
-    echo Directory "%~1" already exists!
-    echo [fsutils] ERROR: directory "%~1" already exists >>"%logfile%"
+if exist "%1" (
+    echo Directory "%1" already exists!
+    echo [fsutils] ERROR: directory "%1" already exists >>"%logfile%"
     goto :eof
 )
-mkdir "%~1"
-echo Created directory "%~1"
-echo [fsutils] INFO: created directory "%~1" >>"%logfile%"
+mkdir "%1"
+echo Created directory "%1"
+echo [fsutils] INFO: created directory "%1" >>"%logfile%"
 goto :eof
 
-:mkfile
+:mktext
 title File Manager
-set /p "mkf_name=File name: "
+if "%1"=="" (
+    echo This command is used to make a text file.
+    echo.
+    echo Usage:
+    echo.
+    echo mktext [file]
+    echo [fsutils] ERROR: no file name provided >>"%logfile%"
+    goto :eof
+)
+set /p "mktContents=File contents: "
 echo.
-set /p "mkf_contents=File contents: "
-echo.
-echo %mkf_contents%>"%mkf_name%"
-if not exist "%mkf_name%" (echo File creation failed! && echo [fsutils] ERROR: could not create file "%mkf_name%" >> "%logfile%" && goto :eof)
+echo %mktContents%>"%1"
+if not exist "%1" (echo File creation failed! && echo [fsutils] ERROR: could not create file "%1" >> "%logfile%" && goto :eof)
 echo File created.
-echo [fsutils] INFO: created file "%mkf_name%" >> "%logfile%"
+echo [fsutils] INFO: created file "%1" >> "%logfile%"
 echo [cmd] INFO: command execution complete >> "%logfile%"
 goto :eof
 
 :rename
-if "%~1"=="" (
+if "%1"=="" (
     echo This command renames a file or a folder.
     echo.
     echo Usage:
@@ -50,14 +58,14 @@ if "%~1"=="" (
     goto :eof
 )
 if "%dirWritable%"=="nope" (
-    echo Read-only: Failed to rename "%~1"!
-    echo [fsutils] ERROR: failed to rename "%~1", is the directory read-only? >>"%logfile%"
+    echo Read-only: Failed to rename "%1"!
+    echo [fsutils] ERROR: failed to rename "%1", is the directory read-only? >>"%logfile%"
     if exist "%toggles%\noReadOnly" (cmd /k exit)
     goto :eof
 )
-if not exist "%~1" (
+if not exist "%1" (
     echo Target does not exist!
-    echo [fsutils] ERROR: target "%~1" does not exist >>"%logfile%"
+    echo [fsutils] ERROR: target "%1" does not exist >>"%logfile%"
     goto :eof
 )
 if exist "%~2" (
@@ -65,13 +73,13 @@ if exist "%~2" (
     echo [fsutils] ERROR: new name "%~2" matches an existing name >>"%logfile%"
     goto :eof
 )
-ren "%~1" "%~2"
-echo Renamed "%~1" to "%~2"
-echo [fsutils] INFO: renamed "%~1" to "%~2" >>"%logfile%"
+ren "%1" "%~2"
+echo Renamed "%1" to "%~2"
+echo [fsutils] INFO: renamed "%1" to "%~2" >>"%logfile%"
 goto :eof
 
 :delete
-if "%~1"=="" (
+if "%1"=="" (
     echo This command deletes something.
     echo.
     echo Usage:
@@ -80,11 +88,11 @@ if "%~1"=="" (
     echo [fsutils] ERROR: no option selected >>"%logfile%"
     goto :eof
 )
-if /I "%~1"=="file" (
+if /I "%1"=="file" (
     set "targetType=file"
     set "typeUpper=File"
     set "typeCmd=del ^"%~2^" /f /q"
-) else if /I "%~1"=="directory" (
+) else if /I "%1"=="directory" (
     set "targetType=directory"
     set "typeUpper=Directory"
     set "typeCmd=rd ^"%~2^" /s /q"
@@ -123,7 +131,7 @@ dir /a:-d /b
 goto :eof
 
 :cd
-if "%~1"=="" (
+if "%1"=="" (
     echo This command is used to change your current directory.
     echo.
     echo Usage:
@@ -132,16 +140,16 @@ if "%~1"=="" (
     echo [fsutils] ERROR: no path provided >>"%logfile%"
     goto :eof
 )
-if not exist "%~1" (
+if not exist "%1" (
     echo Directory invalid!
     echo [fsutils] ERROR: invalid path >>"%logfile%"
     goto :eof
 )
 
-call :checkWritable "%~1" "%excludeWriteCheck%" 0
+call :checkWritable "%1" "%excludeWriteCheck%" 0
 if ERRORLEVEL 10 (
     echo WARNING: Target contains read-only directories!
-    echo [fsutils] WARN: target "%~1" contains read-only directories >>"%logfile%"
+    echo [fsutils] WARN: target "%1" contains read-only directories >>"%logfile%"
     if exist "%toggles%\noReadOnly" (cmd /k exit)
 
     echo Switching to read-only mode...
@@ -150,8 +158,8 @@ if ERRORLEVEL 10 (
     echo [fsutils] WARN: read-only mode enabled >>"%logfile%"
     set "dirWritable=nope"
 ) else (set "dirWritable=yessir")
-cd "%~1"
-echo Changed directory to "%~1"
-echo [fsutils] INFO: changed directory to "%~1" >>"%logfile%"
+cd "%1"
+echo Changed directory to "%1"
+echo [fsutils] INFO: changed directory to "%1" >>"%logfile%"
 echo [fsutils] DEBUG: current path is "%cd%" >>"%logfile%"
 goto :eof

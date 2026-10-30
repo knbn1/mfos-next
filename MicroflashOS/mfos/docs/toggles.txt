@@ -4,12 +4,13 @@ Tweaks:
 
 showDir: Shows current directory in command line before prompt
 incognito: Disables writing to the command history file
+nomotd: Disables showing the Message of the Day on boot
 allowDisabled: Enables restricted commands
 
 Debugging tools:
 
 slowBoot: Add pauses during boot sequence
-echoOn: Disables OFF so command that generated shell output is shown
+echoOn: Disables "@echo OFF" so command that generated shell output is shown
 noClear: Disables clearing shell output (this also affects the "clear" command)
 noLog: Disables system logging functions within MicroflashOS
 noReadOnly: Exit upon detecting read-only mode

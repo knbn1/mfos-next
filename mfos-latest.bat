@@ -322,11 +322,16 @@ echo Logged in as %user%
 echo [cmd] INFO: current user: %user% >>"%logfile%"
 
 :: Message of the Day
-if exist "%userDir%\motd" (
-	if not exist "%toggles%\nomotd" (
+if not exist "%toggles%\nomotd" (
+	if exist "%userSysDataDir%\motd.txt" (
 		echo.
-		type "%userDir%\motd"
+		type "%userSysDataDir%\motd.txt"
+	) else (
+		echo. 
+		echo Type HELP for a list of commands.
+		echo Commands are not case-sensitive.
 		echo.
+		echo Change this message by editing motd.txt in ~/%userSysData%.
 	)
 )
 :: User prompt

@@ -130,7 +130,7 @@ if not "%oldver%"=="%mfosVer%" (
     echo [kernel] ERROR: expected "%mfosVer%" but got "%oldver%" >>"%logfile%"
     goto bootfail
 )
-echo MicroflashOS is on the latest version!
+echo Version strings match!
 echo [kernel] INFO: version string valid >>"%logfile%"
 
 :: System partition check

@@ -3,6 +3,7 @@ System utilities:
 about: Show some system information
 clock: Get current date and time
 clear: Clear console output
+help [list/section] [section.mhs]: List and/or show help sections
 print [text/filename]: Print something!
 writerecheck [current/home]: Update system write access
 

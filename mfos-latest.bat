@@ -13,7 +13,7 @@ set "mfosLocation=%mfosLocation:~0,-1%"
 
 :: Define version string
 
-set "mfosVer=2026.10.14"
+set "mfosVer=2026.11.01"
 
 :: Define default directories
 

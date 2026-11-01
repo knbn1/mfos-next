@@ -4,21 +4,38 @@
 :: the cd commands are so the log messages don't get blown up with paths
 set "curdir=%cd%"
 cd /d "%pkgHelp%"
-echo ---- help sections start here ----
-echo.
+if "%1"=="list" (
+	echo Default help sections:
+	echo.
+	dir /a:-d /b *.mhs
+	goto :eof
+)
+:: load specific help section
+if "%1"=="section" (
+	if exist "%2" (
+		type "%2"
+		echo [help] INFO: load help section %2 from disk0p1 >>"%logfile%"
+		cd /d "%curdir%"
+		goto :eof
+	) else (
+		echo Help section not found!
+		echo [help] ERROR: could not find help section %2 >>"%logfile%"
+		goto :eof
+	)
+)	
+:: load all if none is specified
 for %%i in ("*.mhs") do (
-    type "%%i"
+	type "%%i"
 	echo [help] INFO: load help section %%i from disk0p1 >>"%logfile%"
 	echo.
 )
 cd /d "%pkgDir%\help"
 for %%i in ("*.mhs") do (
-    type "%%i"
+	type "%%i"
 	echo [help] INFO: load help section %%i from disk0p2 >>"%logfile%"
 	echo.
 )
 cd /d "%curdir%"
-echo ----- help sections end here -----
 goto :eof
 
 :about

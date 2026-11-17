@@ -1,3 +1,6 @@
+# IMPORTANT NOTICE: Since 18th November 2026, all development will now take place in the new [mfos-next-py](https://github.com/knbn1/mfos-next-py) repository and we will be FINALLY moving away from Batch, now with Python as the language of choice. This repository, like [the legacy MicroflashOS](https://github.com/knbn1/mfos), will now be archived and only serve as a reference.
+
+
 # Welcome to MicroflashOS Next!
 
 Microflash Operating System Next (MicroflashOS Next or mfos-next) is a "fantasy operating system" made in Batch.
